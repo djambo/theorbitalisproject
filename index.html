@@ -1,0 +1,127 @@
+<!DOCTYPE html>
+<html>
+<head>
+	<title>Portfolio of Gianluca Martini</title>
+	<meta name="viewport" content="width=device-width, user-scalable=no, minimum-scale=1.0, maximum-scale=1.0">
+	<meta name="apple-mobile-web-app-title" content="G.Martini">
+	<meta name="apple-mobile-web-app-capable" content="yes">
+	<meta name="apple-mobile-web-app-status-bar-style"content="black">
+	<link rel="stylesheet" href="css/normalize.css" type="text/css" media="screen"/>
+    <link rel="stylesheet" type="text/css" href="css/style.css">
+    <link href='http://fonts.googleapis.com/css?family=Droid+Serif' rel='stylesheet' type='text/css'>
+	<link href='http://fonts.googleapis.com/css?family=Droid+Sans' rel='stylesheet' type='text/css'>
+</head>
+<body>
+	<script type="text/javascript" src="js/libraries/three.min.js"></script>
+	<script type="text/javascript" src="js/libraries/ExplodeModifier.js"></script>
+	<script type="text/javascript" src="js/libraries/tween.min.js"></script>
+	<script type="text/javascript" src="js/libraries/stats.min.js"></script>
+	<script type="text/javascript" src="js/libraries/TrackballControls.js"></script>
+	<script type="text/javascript" src="js/libraries/dat.gui.min.js"></script>
+	<script type="text/javascript" src="js/Detector.js"></script>
+	<script type="text/javascript" src="js/libraries/jquery.min.js"></script>
+  <script type="text/javascript" src="js/libraries/isat.js"></script>
+  <script type="text/javascript" src="js/libraries/Cesium.js"></script> 
+
+	<div id="globe">
+	</div>
+
+	<div id="wrapper">
+        <div id="satellite_form">
+          <form id="controls" action="">
+              <select id="select_satellite_group">
+                <option value="SMD">
+                  NASA Science
+                </option>
+                <optgroup class="second_level" label="Special Interest">
+                  <option value="visual"> 100 (or so) Brightest</option>
+                  <option value="cosmos-2251-debris"> COSMOS 2251 Debris</option>
+                  <option value="1999-025"> FENGYUN 1C Debris</option>
+                  <option value="iridium-33-debris"> IRIDIUM 33 Debris</option>
+                  <option value="tle-new"> Last 30 Days' Launches</option>
+                  <option value="stations"> Space Stations</option>
+                  <!-- breeze-m r/b breakup (2012-044c) -->
+                </optgroup>
+                <optgroup class="second_level" label="Weather &amp; Earth Resources">
+                  <option value="dmc"> Disaster Monitoring</option>
+                  <option value="resource"> Earth Resources</option>
+                  <option value="goes"> GOES</option>
+                  <option value="noaa"> NOAA</option>
+                  <option value="sarsat"> Search &amp; Rescue (SARSAT)</option>
+                  <option value="tdrss"> Tracking and Data Relay Satellite</option>
+                  <option value="weather"> Weather</option>
+                </optgroup>
+                <optgroup class="second_level" label="Communications">
+                  <option value="amateur"> Amateur Radio</option>
+                  <option value="x-comm"> Experimental</option>
+                  <option value="geo"> Geostationary</option>
+                  <option value="globalstar"> Globalstar</option>
+                  <option value="gorizont"> Gorizont</option>
+                  <option value="intelsat"> Intelsat</option>
+                  <option value="iridium"> Iridium</option>
+                  <option value="molniya"> Molniya</option>
+                  <option value="other-comm"> Other</option>
+                  <option value="orbcomm"> Orbcomm</option>
+                  <option value="raduga"> Raduga</option>
+                </optgroup>
+                <optgroup class="second_level" label="Navigation">
+                  <option value="gps-ops"> GPS Operational</option>
+                  <option value="galileo"> Galileo</option>
+                  <option value="glo-ops"> Glonass Operational</option>
+                  <option value="nnss"> Navy Navigation Satellite System</option>
+                  <option value="musson"> Russian LEO Navigation</option>
+                  <option value="sbas"> Satellite-Based Augmentation System</option>
+                </optgroup>
+                <optgroup class="second_level" label="Scientific">
+                  <option value="education"> Education</option>
+                  <option value="engineering"> Engineering</option>
+                  <option value="geodetic"> Geodetic</option>
+                  <option value="science"> Space &amp; Earth Science</option>
+                </optgroup>
+                <optgroup class="second_level" label="Miscellaneous">
+                  <option value="cubesat"> CubeSats</option>
+                  <option value="military"> Miscellaneous Military</option>
+                  <option value="other"> Other</option>
+                  <option value="radar"> Radar Calibration</option>
+                </optgroup>
+              </select>
+
+          </form>
+        </div> <!-- /satellite_form -->
+        <div id="play_pause_buttons">
+          <button id="play_button"
+                  accesskey="p"
+                  title="Update satellite information"
+                  type="button">Play</button>
+          <button id="pause_button"
+                  accesskey="s"
+                  title="Pause updating satellite information"
+                  type="button">Pause</button>
+        </div> <!-- /play_pause_buttons -->
+
+        <div id="statistics">
+          <div id="date">Date</div>
+          <table id="positions" style="width:100%" summary="Satellite Coordinates">
+            <thead>
+              <tr>
+                <th>Name</th>
+                <th>ID</th>
+                <th>Velocity</th>
+                <th>Latitude</th>
+                <th>Longitude</th>
+                <th>Height (Km)</th>
+                <th>Height (M)</th>
+              </tr>
+            </thead>
+            <!-- tbody destroyed and recreated by javascript -->
+          </table>
+        </div> <!-- /statistics -->
+      </div> <!-- /wrapper -->
+    </div> <!-- /#container -->
+  <script type="text/javascript">
+    opsmode = 'i';
+  </script>
+  <script type="text/javascript" src="js/sat_calculations.js"></script>
+	<script type="text/javascript" src="js/sketch.js"></script>
+</body>
+</html>
