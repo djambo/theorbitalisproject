@@ -1,7 +1,7 @@
 <!DOCTYPE html>
 <html>
 <head>
-	<title>Portfolio of Gianluca Martini</title>
+	<title>Orbitalis</title>
 	<meta name="viewport" content="width=device-width, user-scalable=no, minimum-scale=1.0, maximum-scale=1.0">
 	<meta name="apple-mobile-web-app-title" content="G.Martini">
 	<meta name="apple-mobile-web-app-capable" content="yes">
@@ -22,11 +22,46 @@
 	<script type="text/javascript" src="js/libraries/jquery.min.js"></script>
   <script type="text/javascript" src="js/libraries/isat.js"></script>
   <script type="text/javascript" src="js/libraries/Cesium.js"></script> 
+  <script type="text/javascript" src="js/libraries/RaytracingRenderer.js"></script>
 
 	<div id="globe">
 	</div>
 
-	<div id="wrapper">
+  <!-- SHADER TO GENERATE SKYDOME-->
+  <script type="x-shader/x-vertex" id="vertexShader">
+
+    varying vec3 vWorldPosition;
+
+    void main() {
+
+      vec4 worldPosition = modelMatrix * vec4( position, 1.0 );
+      vWorldPosition = worldPosition.xyz;
+
+      gl_Position = projectionMatrix * modelViewMatrix * vec4( position, 1.0 );
+
+    }
+
+  </script>
+
+  <script type="x-shader/x-fragment" id="fragmentShader">
+
+    uniform vec3 topColor;
+    uniform vec3 bottomColor;
+    uniform float offset;
+    uniform float exponent;
+
+    varying vec3 vWorldPosition;
+
+    void main() {
+
+      float h = normalize( vWorldPosition + offset ).y;
+      gl_FragColor = vec4( mix( bottomColor, topColor, max( pow( max( h , 0.0), exponent ), 0.0 ) ), 1.0 );
+
+    }
+  </script>
+
+
+	<div id="wrapper" style="z-index: 100;">
         <div id="satellite_form">
           <form id="controls" action="">
               <select id="select_satellite_group">
@@ -99,7 +134,7 @@
                   type="button">Pause</button>
         </div> <!-- /play_pause_buttons -->
 
-        <div id="statistics">
+        <!-- <div id="statistics">
           <div id="date">Date</div>
           <table id="positions" style="width:100%" summary="Satellite Coordinates">
             <thead>
@@ -115,13 +150,23 @@
             </thead>
             <!-- tbody destroyed and recreated by javascript -->
           </table>
-        </div> <!-- /statistics -->
+        </div> <!-- /statistics --> -->
       </div> <!-- /wrapper -->
     </div> <!-- /#container -->
   <script type="text/javascript">
     opsmode = 'i';
+
+    // TOGGLE Play
+    document.getElementById('play_button').onclick = function () {
+        PLAY = true;
+    };
+    document.getElementById('pause_button').onclick = function () {
+        PLAY = false;
+    };
+
+   
   </script>
-  <script type="text/javascript" src="js/sat_calculations.js"></script>
+  // <script type="text/javascript" src="js/sat_calculations.js"></script>
 	<script type="text/javascript" src="js/sketch.js"></script>
 </body>
 </html>

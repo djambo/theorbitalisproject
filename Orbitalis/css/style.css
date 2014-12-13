@@ -4,6 +4,11 @@ body {
 	margin: 0 !important;
 	font-family: 'Droid Sans', sans-serif;
 }
+
+#wrapper {
+	position: absolute;
+	z-index: 10;	
+}
  
 canvas{ 
 	z-index: 0;
