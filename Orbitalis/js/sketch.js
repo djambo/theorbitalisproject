@@ -249,7 +249,7 @@ function updateOrbit(orbit) {
  	
 	// if(!scene.orbitaMesh)	{
 
-	orbitMesh = new THREE.Mesh( orbitGeometry, glassMaterialSmooth );
+	orbitMesh = new THREE.Mesh( orbitGeometry, orbitMaterial );
 	scene.add( orbitMesh );
 	// } 
 
