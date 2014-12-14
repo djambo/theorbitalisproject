@@ -159,6 +159,7 @@
     // TOGGLE Play
     document.getElementById('play_button').onclick = function () {
         PLAY = true;
+        newColor = "#"+((1<<24)*Math.random()|0).toString(16);
     };
     document.getElementById('pause_button').onclick = function () {
         PLAY = false;
