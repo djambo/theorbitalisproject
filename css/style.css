@@ -11,6 +11,7 @@ body {
 	font-family: 'Titillium Web', sans-serif;
 	font-size: 16px;
 	font-weight: 300;
+	text-transform: uppercase;
 	color: rgba(255,255,255,.9);
 }
 
@@ -39,7 +40,6 @@ header h1 {
 	font-weight: 200;
 	font-size: 16px;
 	letter-spacing: 3px;
-	text-transform: uppercase;
 	text-align: center;
 	line-height: 1;
 	color: rgba(245,250,255,0.5);
@@ -74,13 +74,13 @@ header h1 span {
 }
 
 #satellites li:hover {
-	background: rgba(145,180,200,0.8);
+	background: rgba(45, 225, 175, 0.8);
 	color: rgba(245,250,255,0.5);
 	cursor: pointer;
 }
 
-#satellites li:active {
-	background: rgba(145,180,200,0.8);
+#satellites li.active {
+	background: rgba(225, 90, 80, 0.8);
 	color: rgba(245,250,255,0.5);
 }
 
@@ -103,11 +103,12 @@ header h1 span {
 	background: rgba(145,180,200,0.8);
 	color: rgba(15,10,35,0.8);
 	line-height: 2;
+	text-transform: uppercase;
 }
 
 #satellites-controls button:hover {
-	background: rgba(145,180,200,1);
-	color: rgba(15,10,35,1);
+	background: rgba(45, 225, 175, 0.8);
+	color: rgba(245,250,255,0.5);
 }
 
 
