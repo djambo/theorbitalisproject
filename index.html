@@ -56,14 +56,19 @@
 		<div id="satellites-controls">
 			<button id="draw_button"
 				accesskey="s"
-				title="Pause updating satellite information"
+				title="Start drawing"
 				type="button">
 				Draw</button>
 			<button id="export_button"
 				accesskey="s"
-				title="Pause updating satellite information"
+				title="Export geometry"
 				type="button">
 				Export</button>
+			<button id="camera_button"
+				accesskey="s"
+				title="Switch between cameras"
+				type="button">
+				Switch Camera</button>
 		</div><!-- /satellites-controls -->
 	</section> <!-- /content -->
 
@@ -165,7 +170,6 @@ NASA Science
 		selectedSat = $(this).parent().children().index(this);
 		$( "#satellites li" ).removeClass('active');
 		$( this ).addClass('active');
-		followSatCamera = true;
 		newColor = "#"+((1<<24)*Math.random()|0).toString(16);
     });
 
@@ -176,6 +180,10 @@ NASA Science
 
 	$( "#draw_button" ).click(function() {
         isDrawing = !isDrawing;
+	});
+
+	$( "#camera_button" ).click(function() {
+		followSatCamera = !followSatCamera;
 	});
 
 	$( "#export_button" ).click(function() {
