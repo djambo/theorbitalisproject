@@ -11,8 +11,7 @@
 
 	<link rel="stylesheet" href="css/normalize.css" type="text/css" media="screen"/>
   <link rel="stylesheet" type="text/css" href="css/style.css">
-	<link href='http://fonts.googleapis.com/css?family=Titillium+Web:200,300' rel='stylesheet' type='text/css'>
-	<link href='http://fonts.googleapis.com/css?family=Montserrat:400,700' rel='stylesheet' type='text/css'>
+	<link href='http://fonts.googleapis.com/css?family=Titillium+Web:200,300,700' rel='stylesheet' type='text/css'>
 
 	<script type="text/javascript" src="js/libraries/three.min.js"></script>
 	<script type="text/javascript" src="js/libraries/ExplodeModifier.js"></script>
@@ -30,31 +29,10 @@
 
 <body>
 
-	<!-- Intro Start -->
-	  <div class="intro">
-		  <div class="intro-container">
-		  <h2>ORBITALIS</h2>
-		  <p>Orbitalis is an interactive artwork which works with live data of satellites.
-			 Create your original shapes with Orbitalis.
-		  </p>
-		  
-		 <h3><a id="start" href="#">START</a></h3>
-		  </div>
-	  </div>
-	  
-	  <script>
-		$( "#start" ).click(function() {
-		   $("div.intro").css("opacity", "0");
-		   $("div.intro").css("visibility", "hidden");
-		});
-	</script>
-	
-	<!-- Intro End -->
-
 	<div id="globe"></div><!-- Full-size Canvas -->
 
 
-	<div id="content" style="z-index: 100;">
+	<section id="content" style="z-index: 100;">
 		<header>
 			<h1>The <span>Orbitalis</span> Project</h1>
 		</header>
@@ -89,9 +67,26 @@
 				type="button">
 				Export</button>
 		</div><!-- /satellites-controls -->
-	</div> <!-- /content -->
+	</section> <!-- /content -->
 
 
+	<section class="intro">
+		<div class="intro-container">
+			<h1>The <span>Orbitalis</span> Project</h1>
+			<p>Orbitalis is an interactive artwork simulation that works with live data from the satellites position orbiting our planet. Start by selecting what satellites you want to see in your simulation and then press "Draw".</p>
+			<nav class="intro-action">
+				<a id="start" href="#">Start</a>
+			</nav>
+		</div>
+	</section>
+
+	<script type="text/javascript" >
+		$( "#start" ).click(function() {
+			$(".intro").css("opacity", "0");
+			$(".intro").css("visibility", "hidden");
+		});
+	</script>
+	<!-- /intro -->
 
 
 
