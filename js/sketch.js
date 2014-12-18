@@ -12,6 +12,8 @@ var orbitMesh;
 var orbits = [];
 var orbite = [];
 var camNeedReset = false;
+var cameraAngle =100;
+var camSpeed = 2;
 
 var container;
 var orbitsGroup = new THREE.Object3D();
@@ -88,11 +90,8 @@ function init()
   	gui.add(ctrls, 'speed', 0, 10);
   	gui.add(ctrls, 'sectionradius', 1, 20);
   	gui.add(ctrls, 'sectionsides', 3, 20);
-  	// gui.add(ctrls, 'followSatCamera');
-  	gui.add(ctrls, 'satMaxWidth', 0, 500);
-   	// gui.add(ctrls, 'selectedSat', 0, 10);
+  	gui.add(ctrls, 'satMaxWidth', 0, 1000);
    	gui.add(ctrls, 'steps', 2, 10000);
-	// scene.fog = new THREE.FogExp2( 0xFFFFFF, 0.0002 );
 
 	// CONTROLS
 	controls = new THREE.TrackballControls( camera, renderer.domElement );
@@ -137,10 +136,6 @@ function init()
 	var stars = new THREE.PointCloud( particles, pMaterial);
 	scene.add(stars);
 
-
-	////////////
-	// CUSTOM //
-	////////////
 
     var sphereGeo = new THREE.IcosahedronGeometry( earthRadius, 1);
 	
@@ -201,14 +196,14 @@ function updateOrbit(orbit) {
   	var extrusionPath =  new THREE.SplineCurve3( orbit.vertices );
 
 	var extrudeSettings = {
-		steps   			: 100,
+		// steps   			: 100,
 		// amount			:10,
 		// curveSegments	: 100000,
 		// steps			: orbit.vertices.length,
 		// bevelEnabled	: false,
 		extrudePath		: extrusionPath,
 	};
-	// extrudeSettings.steps = ctrls.satMaxWidth-ctrls.satMaxWidth/2;
+	extrudeSettings.steps = 500;
 
 	var circleGeometry = new THREE.CircleGeometry( ctrls.sectionradius, ctrls.sectionsides );
 	var orbitSection = new THREE.Shape( circleGeometry.vertices );
@@ -318,7 +313,18 @@ function animate() {
 			controls.reset();
 			camNeedReset = false;
 		}
-	    controls.update();
+	    // controls.update();
+		camPosition = cameraAngle * Math.PI / 180;
+		camera.position.x = 400*Math.cos(camPosition*camSpeed) + 0;
+		camera.position.y =	50*Math.sin(camPosition*camSpeed) + 50;
+		camera.position.z = 1050*Math.sin(camPosition*camSpeed) + 0;
+		camera.lookAt(scene.position );
+	}
+
+	if(cameraAngle>=360){
+		cameraAngle = 0;	
+	} else {
+		cameraAngle += 0.1;	
 	}
 	// stats.update();
 
