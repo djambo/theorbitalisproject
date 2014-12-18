@@ -64,7 +64,6 @@ animate();
 getSatrecsFromTLEFile('tle/SMD.txt');
 // document.getElementById('select_satellite_group').onchange = function () {
 //    	getSatrecsFromTLEFile('tle/' + this.value + '.txt'); // TODO: security risk?
-//     newColor = "#"+((1<<24)*Math.random()|0).toString(16);
 // };
 
 function init() 
