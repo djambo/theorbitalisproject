@@ -12,6 +12,7 @@
 	<link rel="stylesheet" href="css/normalize.css" type="text/css" media="screen"/>
   <link rel="stylesheet" type="text/css" href="css/style.css">
 	<link href='http://fonts.googleapis.com/css?family=Titillium+Web:200,300' rel='stylesheet' type='text/css'>
+	<link href='http://fonts.googleapis.com/css?family=Montserrat:400,700' rel='stylesheet' type='text/css'>
 
 	<script type="text/javascript" src="js/libraries/three.min.js"></script>
 	<script type="text/javascript" src="js/libraries/ExplodeModifier.js"></script>
@@ -28,6 +29,27 @@
 </head>
 
 <body>
+
+	<!-- Intro Start -->
+	  <div class="intro">
+		  <div class="intro-container">
+		  <h2>ORBITALIS</h2>
+		  <p>Orbitalis is an interactive artwork which works with live data of satellites.
+			 Create your original shapes with Orbitalis.
+		  </p>
+		  
+		 <h3><a id="start" href="#">START</a></h3>
+		  </div>
+	  </div>
+	  
+	  <script>
+		$( "#start" ).click(function() {
+		   $("div.intro").css("opacity", "0");
+		   $("div.intro").css("visibility", "hidden");
+		});
+	</script>
+	
+	<!-- Intro End -->
 
 	<div id="globe"></div><!-- Full-size Canvas -->
 
