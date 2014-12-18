@@ -10,34 +10,23 @@ var mouseX, mouseY;
 var orbitMesh;
 
 var orbits = [];
-var orbite = [];
-
-
-var orbitsGroup = new THREE.Object3D();
-
-var newColor;
-
 var time = 1;
-var isExporting = false;
 
 var currentPosition;
-var isDrawing = false;
 
 var ctrls = {
-	satMaxWidth: 500,
 	name: "David Walsh",
 	speed: 1,
 	steps: 1,
-	sectionradius: 1, 
-	sectionsides: 3,
-	followSatCamera: false,
-	selectedSat: 0
+	sectionradius: 3, 
+	sectionsides: 8,
+	followSatCamera: false
+	// wireframe: true
 };
 
-var earthRadius = 100;
-
+// var speed = 0.1;
 //=========================================
-//CESIUM VARIABLES
+
 var num = 1;
 var clock           = new Cesium.Clock();
 var satrecs         = [];   // populated from onclick file load
@@ -48,327 +37,10 @@ var satPositions    = [];   // calculated by updateSatrecsPosVel()
 var WHICHCONST      = 84;   //
 var TYPERUN         = 'm';  // 'm'anual, 'c'atalog, 'v'erification
 var TYPEINPUT       = 'n';  // HACK: 'now'
-var PLAY            = true;
-var SAT_POSITIONS_MAX = 10; // Limit numer of positions displayed to save CPU
+var PLAY            = false;
+var SAT_POSITIONS_MAX = 1; // Limit numer of positions displayed to save CPU
 var CALC_INTERVAL_MS  = 0;
 var GLOBAL_MARKERS = [];
-//==========================================
-
-init();
-animate();
-
-getSatrecsFromTLEFile('tle/SMD.txt');
-document.getElementById('select_satellite_group').onchange = function () {
-   	getSatrecsFromTLEFile('tle/' + this.value + '.txt'); // TODO: security risk?
-    newColor = "#"+((1<<24)*Math.random()|0).toString(16);
-
-};
-
-function init() 
-{
-	// SCENE
-	scene = new THREE.Scene();
-
-	// CAMERA
-	var SCREEN_WIDTH = window.innerWidth, SCREEN_HEIGHT = window.innerHeight;
-	var VIEW_ANGLE = 45, ASPECT = SCREEN_WIDTH / SCREEN_HEIGHT, NEAR = 0.1, FAR = 1000000;
-	camera = new THREE.PerspectiveCamera( VIEW_ANGLE, ASPECT, NEAR, FAR);
-	scene.add(camera);
-	camera.position.set(0,150,800);
-	camera.lookAt(scene.position);	
-	// RENDERER
-	if ( Detector.webgl )
-		renderer = new THREE.WebGLRenderer( {antialias:true} );
-	else
-		renderer = new THREE.CanvasRenderer(); 
-	renderer.setSize(SCREEN_WIDTH, SCREEN_HEIGHT);
-	container = document.createElement( 'div' );
-	document.body.appendChild( container );
-	container.appendChild( renderer.domElement );
-	// EVENTS
-	
-	var gui = new dat.GUI();
-
-  	gui.add(ctrls, 'speed', 0, 100);
-  	gui.add(ctrls, 'sectionradius', 1, 20);
-  	gui.add(ctrls, 'sectionsides', 3, 20);
-  	gui.add(ctrls, 'followSatCamera');
-  	gui.add(ctrls, 'satMaxWidth', 0, 500);
-   	gui.add(ctrls, 'selectedSat', 0, 10);
-   	gui.add(ctrls, 'steps', 2, 10000);
-	// scene.fog = new THREE.FogExp2( 0xFFFFFF, 0.0002 );
-
-	// CONTROLS
-	controls = new THREE.TrackballControls( camera, renderer.domElement );
-	controls.noZoom = false;
-	controls.noPan = true;
-
-	controls.dynamicDampingFactor = 0.2;
-
-	controls.minDistance = earthRadius * 5;
-	controls.maxDistance = earthRadius * 30;
-	// STATS
-	stats = new Stats();
-	stats.domElement.style.position = 'absolute';
-	stats.domElement.style.bottom = '0px';
-	stats.domElement.style.zIndex = 100;
-	container.appendChild( stats.domElement );
-
-	light2 = new THREE.PointLight(0xffffff, 0.9);
-	light2.position.set(1000,0,1000);
-	scene.add(light2);
-
- 	hemiLight = new THREE.HemisphereLight( 0xffffff, 0xffffff, 0.5 );
-	hemiLight.color.setHSL( 0.6, 1, 0.6 );
-	hemiLight.groundColor.setHSL( 0.095, 1, 0.75 );
-	hemiLight.position.set( 0, 500, 0 );
-	scene.add( hemiLight );
- 
-	// SKYDOME
-	// var vertexShader = document.getElementById( 'vertexShader' ).textContent;
-	// var fragmentShader = document.getElementById( 'fragmentShader' ).textContent;
-	// var uniforms = {
-	// 	topColor: 	 { type: "c", value: new THREE.Color( 0x0077ff ) },
-	// 	bottomColor: { type: "c", value: new THREE.Color( 0xffffff ) },
-	// 	// topColor: 	 { type: "c", value: new THREE.Color( 0x000000 ) },
-	// 	// bottomColor: { type: "c", value: new THREE.Color( 0x000000 ) },
-
-	// 	offset:		 { type: "f", value: 33 },
-	// 	exponent:	 { type: "f", value: 0.6 }
-	// }
-	
-	// uniforms.topColor.value.copy( hemiLight.color );
-	// scene.fog.color.copy( uniforms.bottomColor.value );
-
-	var skyMap = THREE.ImageUtils.loadTexture( "images/skymap2.png" );
-
-	var skyGeo = new THREE.SphereGeometry( 10000, 32, 15 );
-	// var skyMat = new THREE.ShaderMaterial( { vertexShader: vertexShader, fragmentShader: fragmentShader, uniforms: uniforms, side: THREE.BackSide } );
-	var skyMat = new THREE.MeshLambertMaterial( { 
-		map: skyMap, 
-		side: THREE.BackSide,
-		// color: 0x2dceff
-	} );
-
-	var sky = new THREE.Mesh( skyGeo, skyMat );
-	// scene.add( sky );
-
-
-	////////////
-	// CUSTOM //
-	////////////
-
-    var sphereGeo = new THREE.IcosahedronGeometry( earthRadius, 1);
-	
-    // Create the Earth with nice texture
-
-	var colors = THREE.ImageUtils.loadTexture( "images/earth-day.jpg" );
-
-	var earthMaterial = new THREE.MeshPhongMaterial( { 
-		wireframe: false, 
-		wireframeLinewidth: 10,
-		color: 0x2dceff, 
-		shading: THREE.FlatShading,
-		map: colors 
-	} );
-
-    this.earthSphere = new THREE.Mesh( sphereGeo, earthMaterial ); 
-    scene.add(earthSphere);	
-	
-    renderer.autoClear = false;
-    renderer.setClearColor(0x000000, 0.0);
-
-	window.addEventListener('mousemove', mouseMonitor);
-
-	scene.add(orbitsGroup);
-	createSatGroup();
-}
-
-function createSatGroup(){
-
-	particleGeometry = new THREE.Geometry();
-
-	var particleMaterial = new THREE.PointCloudMaterial({
-		size: 20, 
-		// vertexColors: THREE. VertexColors, 
-		depthTest: true, 
-		opacity: 0.5, 
-		sizeAttenuation: false, 
-	 	map: THREE.ImageUtils.loadTexture("images/spark.png"),
-  		blending: THREE.AdditiveBlending,
-		transparent: true
-	});
-
-	particleSystem = new THREE.PointCloud(
-	  	particleGeometry,
-	    particleMaterial
-	);
-
-	scene.add(particleSystem);
-
-}
-
-function updateOrbit(orbit) {
-
-	if(orbit.vertices.length>=ctrls.satMaxWidth){
-		orbit.vertices.shift();
-	}		
-
-  	var extrusionPath =  new THREE.SplineCurve3( orbit.vertices );
-
-	var extrudeSettings = {
-		// amount			:10,
-		// curveSegments	: 100000,
-		// steps			: orbit.vertices.length,
-		// bevelEnabled	: false,
-		extrudePath		: extrusionPath,
-	};
-	extrudeSettings.steps = ctrls.satMaxWidth-ctrls.satMaxWidth/2;
-
-	var circleGeometry = new THREE.CircleGeometry( ctrls.sectionradius, ctrls.sectionsides );
-	var orbitSection = new THREE.Shape( circleGeometry.vertices );
-
-	var orbitGeometry = new THREE.ExtrudeGeometry( orbitSection, extrudeSettings );
-
-	var orbitMaterial = new THREE.MeshLambertMaterial( { color: newColor, wireframe: true, shading: THREE.FlatShading, side: THREE.FrontSide } );
-	
-	var glassMaterialSmooth = new THREE.MeshPhongMaterial( {
-		color: 0xffffff,
-		specular: 0xffaa55,
-		shininess: 10000,
-		side: THREE.FrontSide,
-		vertexColors: THREE.NoColors,
-		shading: THREE.SmoothShading,
-		wireframe: true
-	} );
-
-	glassMaterialSmooth.glass = true;
-	glassMaterialSmooth.reflectivity = 0.25;
-	glassMaterialSmooth.refractionRatio = 0.6;
-
-	if(orbite[orbit.num]==null){
-		orbite[orbit.num] = new THREE.Mesh( orbitGeometry, orbitMaterial );
-		orbitsGroup.add( orbite[orbit.num] );
-	} else {
-		orbite[orbit.num].geometry.dynamic = true;
-        orbite[orbit.num].geometry = orbitGeometry;  
-        orbite[orbit.num].geometry.verticesNeedUpdate = true;
-	}
-}
-
-
-function updateSatPos(num, lat, lon, alt) {
-	
-	lat =  (lat * time)* Math.PI / 180.0;
-	lon =  (-lon * time)* Math.PI / 180.0; 
-
-	var posX = Math.cos(lat) * Math.cos(lon);	
-	var posY = Math.sin(lat);
-	var posZ = Math.cos(lat) * Math.sin(lon) ;
-	var altitude = (earthRadius + alt/350);
-
-	particleGeometry.vertices[num].x = posX;
-	particleGeometry.vertices[num].y = posY;
-	particleGeometry.vertices[num].z = posZ;
-	particleGeometry.vertices[num].multiplyScalar(altitude);
-
-	particleGeometry.verticesNeedUpdate = true;
-
-	orbits[num].currentPosition = new THREE.Vector3(posX, posY, posZ).multiplyScalar(altitude);
-	orbits[num].num = num;
-
-	if(isDrawing){
-		if(orbits[num].num==ctrls.selectedSat){
-			orbits[num].vertices.push(orbits[num].currentPosition);
-			updateOrbit(orbits[num]);
-		}
-	}
-
-}
-
-
-function addSat(num, lat, lon, alt) {
-
-	lat =  lat * Math.PI / 180.0;
-	lon = -lon * Math.PI / 180.0;
-
-	var posX = Math.cos(lat) * Math.cos(lon); 
-	var posY = Math.sin(lat);
-	var posZ = Math.cos(lat) * Math.sin(lon) ;
-	var altitude = (earthRadius + alt/350);
-
-	// var colors = [ 0x000000, 0xff0080, 0x8000ff, 0xffffff ];
-	var colors = [0x8000ff];
-
-	particleGeometry.dispose() 
-	particleGeometry.vertices.push(new THREE.Vector3(posX, posY, posZ).multiplyScalar(altitude));
-	particleGeometry.colors.push( new THREE.Color( colors[ Math.floor( Math.random() * colors.length ) ] ) );
-
-	orbits[num] = new THREE.Geometry();	 
-
-	// for (var i = 0; i >= 2; i++) {
-	//  	orbits[num].vertices.push(new THREE.Vector3(posX, posY, posZ).multiplyScalar(altitude));
-	// }
-
-    orbits[num].dynamic = true;
-}
-
-function animate() {
-
-    requestAnimationFrame( animate );
-
-	computeStats();
-
-	time = time + ctrls.speed/100;
-	render();		
-
-
-	if(ctrls.followSatCamera){
-		var currentPosition = orbits[ctrls.selectedSat].currentPosition;
-		camera.position.set(currentPosition.x,currentPosition.y, currentPosition.z).multiplyScalar(4);
-		camera.lookAt(scene.position);
-	} else {
-	    controls.update();
-	}
-	stats.update();
-
-	if(isExporting){
-		var exporter = new THREE.OBJExporter();
-		isExporting = false;	
-    	exportString( exporter.parse( orbitsGroup.children[0].geometry ) );
-
-	} else {
-		// console.log('not exporting')
-	}
-}
-
-function render() {
-	renderer.clear();
-    renderer.render(scene, camera);
-}
-
-
-var exportString = function ( output ) {
-
-		var blob = new Blob( [ output ], { type: 'text/plain' } );
-		var objectURL = URL.createObjectURL( blob );
-
-		window.open( objectURL, '_blank' );
-		window.focus();
-
-	};
-
-window.onresize = function() {
-	camera.aspect = window.innerWidth / window.innerHeight;
-	camera.updateProjectionMatrix();
-	renderer.setSize( window.innerWidth, window.innerHeight );
-}
-
-function mouseMonitor( event ) {
-    event.preventDefault();
-    mouseX =  ( event.clientX / window.innerWidth ) * 20 - 1;
-    mouseY = - ( event.clientY / window.innerHeight ) * 20 + 1;
-}
 
 
 function getSatrecsFromTLEFile(fileName) {
@@ -540,15 +212,325 @@ function computeStats() {
 //==========//==========//==========//==========//==========//==========//==========
 
 
+init();
+animate();
 
+getSatrecsFromTLEFile('tle/SMD.txt');
+document.getElementById('select_satellite_group').onchange = function () {
+    getSatrecsFromTLEFile('tle/' + this.value + '.txt'); // TODO: security risk?
+};
+
+// FUNCTIONS 		
+function init() 
+{
+	// SCENE
+	scene = new THREE.Scene();
+
+	// CAMERA
+	var SCREEN_WIDTH = window.innerWidth, SCREEN_HEIGHT = window.innerHeight;
+	var VIEW_ANGLE = 45, ASPECT = SCREEN_WIDTH / SCREEN_HEIGHT, NEAR = 0.1, FAR = 1000000;
+	camera = new THREE.PerspectiveCamera( VIEW_ANGLE, ASPECT, NEAR, FAR);
+	scene.add(camera);
+	camera.position.set(0,150,800);
+	camera.lookAt(scene.position);	
+	// RENDERER
+	if ( Detector.webgl )
+		renderer = new THREE.WebGLRenderer( {antialias:true} );
+	else
+		renderer = new THREE.CanvasRenderer(); 
+	renderer.setSize(SCREEN_WIDTH, SCREEN_HEIGHT);
+	container = document.createElement( 'div' );
+	document.body.appendChild( container );
+	container.appendChild( renderer.domElement );
+	// EVENTS
+	
+	var gui = new dat.GUI();
+	// gui.add(text, 'Time Speed');
+  	gui.add(ctrls, 'speed', -10, 10);
+  	gui.add(ctrls, 'sectionradius', 1, 20);
+  	gui.add(ctrls, 'sectionsides', 3, 20);
+  	gui.add(ctrls, 'followSatCamera')
+  	// gui.add(text, 'displayOutline');
+  	// gui.add(text, 'explode');
+	scene.fog = new THREE.FogExp2( 0xFFFFFF, 0.0002 );
+
+	// CONTROLS
+	controls = new THREE.TrackballControls( camera, renderer.domElement );
+	controls.noZoom = true;
+	controls.noPan = true;
+
+	controls.dynamicDampingFactor = 0.2;
+
+	// controls.minDistance = radius * 1.1;
+	// controls.maxDistance = radius * 25;
+	// STATS
+	stats = new Stats();
+	stats.domElement.style.position = 'absolute';
+	stats.domElement.style.bottom = '0px';
+	stats.domElement.style.zIndex = 100;
+	container.appendChild( stats.domElement );
+
+	// LIGHT
+	// light1 = new THREE.PointLight(0xffffff, 0.5);
+	// light1.position.set(0,0,0);
+	// scene.add(light1);
+	// scene.add(new THREE.PointLightHelper(light1, 100));
+
+	
+	// light2 = new THREE.PointLight(0xffffff, 0.4);
+	// light2.position.set(1000,0,1000);
+	// scene.add(light2);
+	// scene.add(new THREE.PointLightHelper(light2, 100));
+
+
+ 	hemiLight = new THREE.HemisphereLight( 0xffffff, 0xffffff, 0.9 );
+	hemiLight.color.setHSL( 0.6, 1, 0.6 );
+	hemiLight.groundColor.setHSL( 0.095, 1, 0.75 );
+	hemiLight.position.set( 0, 500, 0 );
+	scene.add( hemiLight );
+ 
+// SKYDOME
+	var vertexShader = document.getElementById( 'vertexShader' ).textContent;
+	var fragmentShader = document.getElementById( 'fragmentShader' ).textContent;
+	var uniforms = {
+		topColor: 	 { type: "c", value: new THREE.Color( 0x0077ff ) },
+		bottomColor: { type: "c", value: new THREE.Color( 0xffffff ) },
+		// topColor: 	 { type: "c", value: new THREE.Color( 0x000000 ) },
+		// bottomColor: { type: "c", value: new THREE.Color( 0x000000 ) },
+
+		offset:		 { type: "f", value: 33 },
+		exponent:	 { type: "f", value: 0.6 }
+	}
+	
+	uniforms.topColor.value.copy( hemiLight.color );
+
+	scene.fog.color.copy( uniforms.bottomColor.value );
+
+
+	var skyGeo = new THREE.SphereGeometry( 10000, 32, 15 );
+	var skyMat = new THREE.ShaderMaterial( { vertexShader: vertexShader, fragmentShader: fragmentShader, uniforms: uniforms, side: THREE.BackSide } );
+
+	var sky = new THREE.Mesh( skyGeo, skyMat );
+	scene.add( sky );
+
+
+	////////////
+	// CUSTOM //
+	////////////
+
+    var sphereGeo = new THREE.IcosahedronGeometry( 100, 1);
+	
+    // Create the Earth with nice texture
+
+	var colors = THREE.ImageUtils.loadTexture( "images/earth-day.jpg" );
+
+	var earthMaterial = new THREE.MeshPhongMaterial( { 
+		wireframe: true, 
+		wireframeLinewidth: 10,
+		color: 0x2dceff, 
+		shading: THREE.FlatShading,
+		// map: colors 
+	} );
+
+    this.earthSphere = new THREE.Mesh( sphereGeo, earthMaterial ); 
+    scene.add(earthSphere);	
+	
+    renderer.autoClear = false;
+    renderer.setClearColor(0x000000, 0.0);
+
+	window.addEventListener('mousemove', mouseMonitor);
+
+	createSatGroup();
+}
+
+function createSatGroup(){
+
+	particleGeometry = new THREE.Geometry();
+
+	var particleMaterial = new THREE.PointCloudMaterial({
+		size: 20, 
+		vertexColors: THREE. VertexColors, 
+		depthTest: true, 
+		opacity: 0.5, 
+		sizeAttenuation: false, 
+		transparent: true
+	});
+
+	particleSystem = new THREE.PointCloud(
+	  	particleGeometry,
+	    particleMaterial
+	);
+
+	scene.add(particleSystem);
+
+}
+
+
+function updateOrbit(orbit) {
+
+	// scene.remove( orbitMesh );
+
+	// if(extrusionPathPoints.length>0){
+	// } else {
+	// 	var extrusionPathPoints = [];
+	// 		extrusionPathPoints.push(new THREE.Vector3(posX, posY, posZ).multiplyScalar(alt/50));
+		
+
+	var extrusionPath =  new THREE.SplineCurve3( orbit.vertices );
+
+
+	var extrudeSettings = {
+		// amount			: 1,
+		steps			: ctrls.steps,
+		bevelEnabled	: false,
+		extrudePath		: extrusionPath,
+		// curveSegments 	: 10
+		// bevelThickness — float. how deep into the original shape bevel goes
+		// bevelSize — float. how far from shape outline is bevel
+		// bevelSegments — int. number of bevel layers
+		// extrudePath — THREE.CurvePath. 3d spline path to extrude shape along. (creates Frames if (frames aren't defined)
+		// frames — THREE.TubeGeometry.FrenetFrames. containing arrays of tangents, normals, binormals
+		};
+	
+
+	var circleGeometry = new THREE.CircleGeometry( ctrls.sectionradius, ctrls.sectionsides );
+	var orbitSection = new THREE.Shape( circleGeometry.vertices );
+
+	var orbitGeometry = new THREE.ExtrudeGeometry( orbitSection, extrudeSettings );
+
+
+	var orbitMaterial = new THREE.MeshLambertMaterial( { color: 0xff2990, wireframe: false, shading: THREE.FlatShading } );
+	
+	var glassMaterialSmooth = new THREE.MeshPhongMaterial( {
+		color: 0xffffff,
+		specular: 0xffaa55,
+		shininess: 10000,
+		vertexColors: THREE.NoColors,
+		shading: THREE.SmoothShading
+	} );
+	glassMaterialSmooth.glass = true;
+	glassMaterialSmooth.reflectivity = 0.25;
+	glassMaterialSmooth.refractionRatio = 0.6;
+
+	orbitMesh = new THREE.Mesh( orbitGeometry, orbitMaterial );
+			
+	// console.log(orbitMesh.geometry);
+
+	scene.add( orbitMesh );
+}
+
+
+function updateSatPos(num, lat, lon, alt) {
+	
+	lat =  (lat * time)* Math.PI / 180.0;
+	lon =  (-lon * time)* Math.PI / 180.0; 
+
+
+	var posX = Math.cos(lat) * Math.cos(lon);	var posY = Math.sin(lat);
+	var posZ = Math.cos(lat) * Math.sin(lon) ;
+	var altitude = 5000 + alt;
+
+	particleGeometry.vertices[num].x = posX;
+	particleGeometry.vertices[num].y = posY;
+	particleGeometry.vertices[num].z = posZ;
+	particleGeometry.vertices[num].multiplyScalar(altitude/50);
+
+	particleGeometry.verticesNeedUpdate = true;
+
+	currentPosition = new THREE.Vector3(posX, posY, posZ).multiplyScalar(altitude/50);
+
+	orbits[num].vertices.unshift(currentPosition);
+	orbits[num].vertices.pop();
+
+	updateOrbit(orbits[num]);
+}
+
+
+
+// function clearCanvas(array) {
+//  	var array = [];
+// }
+
+
+function addSat(num, lat, lon, alt) {
+
+	lat =  lat * Math.PI / 180.0;
+	lon = -lon * Math.PI / 180.0;
+
+	var posX = Math.cos(lat) * Math.cos(lon); 
+	var posY = Math.sin(lat);
+	var posZ = Math.cos(lat) * Math.sin(lon) ;
+	var altitude = 5000 + alt;
+
+	// var colors = [ 0x000000, 0xff0080, 0x8000ff, 0xffffff ];
+	var colors = [0x8000ff];
+
+	particleGeometry.dispose() 
+	particleGeometry.vertices.push(new THREE.Vector3(posX, posY, posZ).multiplyScalar(altitude/50));
+	particleGeometry.colors.push( new THREE.Color( colors[ Math.floor( Math.random() * colors.length ) ] ) );
+
+	orbits[num] = new THREE.Geometry();	 
+
+	for (i=0; i<4; i++){
+    	orbits[num].vertices.push(new THREE.Vector3(posX, posY, posZ).multiplyScalar(altitude/50));
+    }
+    orbits[num].dynamic = true;
+}
+
+function animate() {
+
+    requestAnimationFrame( animate );
+
+    if(PLAY) {
+		computeStats();
+	}
+	
+	// lightPosition = lightAngle * Math.PI / 180;
+	// light1.position.x = 800*Math.cos(lightPosition) + 0;
+	// light1.position.z = 800*Math.sin(lightPosition) + 0;
+	// lightAngle = lightAngle + 0.4;
+	
+	// console.log(mouseX,mouseY);
+	time = time + ctrls.speed/100;
+	render();		
+
+
+	if(ctrls.followSatCamera){
+		camera.position.set(currentPosition.x,currentPosition.y, currentPosition.z).multiplyScalar(4);
+		camera.lookAt(scene.position)
+	} else {
+	    controls.update();
+	}
+	stats.update();
+}
+
+function render() {
+	renderer.clear();
+    renderer.render(scene, camera);
+}
+
+
+window.onresize = function() {
+	camera.aspect = window.innerWidth / window.innerHeight;
+	camera.updateProjectionMatrix();
+	renderer.setSize( window.innerWidth, window.innerHeight );
+}
+
+function mouseMonitor( event ) {
+    event.preventDefault();
+    mouseX =  ( event.clientX / window.innerWidth ) * 20 - 1;
+    mouseY = - ( event.clientY / window.innerHeight ) * 20 + 1;
+}
 //TODO:
+//REDUCE WIREFRAME LINE NUMBER
+// LET THE CLOCK START WHEN PRESS PLAY
 //ITEGRATE TRACKBALL CONTROLS WITH AN IF STATEMENT TO KEEP IT SPINNING 
+// APPLY TUBEGEOMETRY TO ORBITS
 //NORMALIZE ORBITS RADIUS IN 8 LEVELS
+//STROKE REVEAL
+//ANIMATE!
 //CONNECT EVERY ORBIT WITH 4 LINES TO THE CORE
 //STARS
 //PIXEL NOISE SHADER
 //ADDITIONAL
 //AUDIO
-
-
-//GOOD SEQUENCE === NASA ---GALILEO=---GLONASS
