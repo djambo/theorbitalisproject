@@ -182,7 +182,7 @@ function createSatGroup(){
 		depthTest: true, 
 		opacity: 0.5, 
 		sizeAttenuation: false, 
-	 	map: THREE.ImageUtils.loadTexture("images/quick_sat.gif"),
+	 	map: THREE.ImageUtils.loadTexture("images/sat.gif"),
   		blending: THREE.AdditiveBlending,
 		transparent: true
 	});

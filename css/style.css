@@ -10,6 +10,25 @@ body {
 	z-index: 10;	
 }
  
+#sat_list {
+	padding: 8px;
+	position: absolute;
+	border: 2px solid white;
+}
+
+#sat_list li {
+	margin: 0px;
+	display: block;
+	width: 40px;
+	height: 40px;
+	background-color: white;
+	margin-bottom: 10px;
+}
+
+#sat_list li:hover {
+	background-color: yellow;
+}
+
 canvas{ 
 	z-index: 0;
 	position: absolute;
