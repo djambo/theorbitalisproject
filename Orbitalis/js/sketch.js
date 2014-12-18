@@ -10,21 +10,28 @@ var mouseX, mouseY;
 var orbitMesh;
 
 var orbits = [];
+var orbite = [];
+
+
+var orbitsGroup = new THREE.Object3D();
 
 var newColor;
 
 var time = 1;
+var isExporting = false;
 
 var currentPosition;
+var isDrawing = false;
 
 var ctrls = {
+	satMaxWidth: 500,
 	name: "David Walsh",
 	speed: 1,
 	steps: 1,
 	sectionradius: 1, 
-	sectionsides: 8,
-	followSatCamera: false
-	// wireframe: true
+	sectionsides: 3,
+	followSatCamera: false,
+	selectedSat: 0
 };
 
 var earthRadius = 100;
@@ -41,8 +48,8 @@ var satPositions    = [];   // calculated by updateSatrecsPosVel()
 var WHICHCONST      = 84;   //
 var TYPERUN         = 'm';  // 'm'anual, 'c'atalog, 'v'erification
 var TYPEINPUT       = 'n';  // HACK: 'now'
-var PLAY            = false;
-var SAT_POSITIONS_MAX = 1; // Limit numer of positions displayed to save CPU
+var PLAY            = true;
+var SAT_POSITIONS_MAX = 10; // Limit numer of positions displayed to save CPU
 var CALC_INTERVAL_MS  = 0;
 var GLOBAL_MARKERS = [];
 //==========================================
@@ -52,8 +59,9 @@ animate();
 
 getSatrecsFromTLEFile('tle/SMD.txt');
 document.getElementById('select_satellite_group').onchange = function () {
-    getSatrecsFromTLEFile('tle/' + this.value + '.txt'); // TODO: security risk?
+   	getSatrecsFromTLEFile('tle/' + this.value + '.txt'); // TODO: security risk?
     newColor = "#"+((1<<24)*Math.random()|0).toString(16);
+
 };
 
 function init() 
@@ -81,11 +89,13 @@ function init()
 	
 	var gui = new dat.GUI();
 
-  	gui.add(ctrls, 'speed', -10, 10);
+  	gui.add(ctrls, 'speed', 0, 100);
   	gui.add(ctrls, 'sectionradius', 1, 20);
   	gui.add(ctrls, 'sectionsides', 3, 20);
-  	gui.add(ctrls, 'followSatCamera')
-  	
+  	gui.add(ctrls, 'followSatCamera');
+  	gui.add(ctrls, 'satMaxWidth', 0, 500);
+   	gui.add(ctrls, 'selectedSat', 0, 10);
+   	gui.add(ctrls, 'steps', 2, 10000);
 	// scene.fog = new THREE.FogExp2( 0xFFFFFF, 0.0002 );
 
 	// CONTROLS
@@ -95,7 +105,7 @@ function init()
 
 	controls.dynamicDampingFactor = 0.2;
 
-	// controls.minDistance = earthRadius * 5;
+	controls.minDistance = earthRadius * 5;
 	controls.maxDistance = earthRadius * 30;
 	// STATS
 	stats = new Stats();
@@ -104,18 +114,9 @@ function init()
 	stats.domElement.style.zIndex = 100;
 	container.appendChild( stats.domElement );
 
-	// LIGHT
-	
-	// light1 = new THREE.PointLight(0xffffff, 0.5);
-	// light1.position.set(0,0,0);
-	// scene.add(light1);
-	// scene.add(new THREE.PointLightHelper(light1, 100));
-	
 	light2 = new THREE.PointLight(0xffffff, 0.9);
 	light2.position.set(1000,0,1000);
 	scene.add(light2);
-	// scene.add(new THREE.PointLightHelper(light2, 100));
-
 
  	hemiLight = new THREE.HemisphereLight( 0xffffff, 0xffffff, 0.5 );
 	hemiLight.color.setHSL( 0.6, 1, 0.6 );
@@ -123,7 +124,7 @@ function init()
 	hemiLight.position.set( 0, 500, 0 );
 	scene.add( hemiLight );
  
-// SKYDOME
+	// SKYDOME
 	// var vertexShader = document.getElementById( 'vertexShader' ).textContent;
 	// var fragmentShader = document.getElementById( 'fragmentShader' ).textContent;
 	// var uniforms = {
@@ -141,7 +142,7 @@ function init()
 
 	var skyMap = THREE.ImageUtils.loadTexture( "images/skymap2.png" );
 
-	var skyGeo = new THREE.SphereGeometry( 4000, 32, 15 );
+	var skyGeo = new THREE.SphereGeometry( 10000, 32, 15 );
 	// var skyMat = new THREE.ShaderMaterial( { vertexShader: vertexShader, fragmentShader: fragmentShader, uniforms: uniforms, side: THREE.BackSide } );
 	var skyMat = new THREE.MeshLambertMaterial( { 
 		map: skyMap, 
@@ -150,7 +151,7 @@ function init()
 	} );
 
 	var sky = new THREE.Mesh( skyGeo, skyMat );
-	scene.add( sky );
+	// scene.add( sky );
 
 
 	////////////
@@ -179,6 +180,7 @@ function init()
 
 	window.addEventListener('mousemove', mouseMonitor);
 
+	scene.add(orbitsGroup);
 	createSatGroup();
 }
 
@@ -188,10 +190,12 @@ function createSatGroup(){
 
 	var particleMaterial = new THREE.PointCloudMaterial({
 		size: 20, 
-		vertexColors: THREE. VertexColors, 
+		// vertexColors: THREE. VertexColors, 
 		depthTest: true, 
 		opacity: 0.5, 
 		sizeAttenuation: false, 
+	 	map: THREE.ImageUtils.loadTexture("images/spark.png"),
+  		blending: THREE.AdditiveBlending,
 		transparent: true
 	});
 
@@ -204,93 +208,53 @@ function createSatGroup(){
 
 }
 
-var orbita = new THREE.Geometry();	
-	orbita.dynamic = true;
-
-// orbita.dynamic = true; 
-
 function updateOrbit(orbit) {
 
-	// scene.remove(orbitMesh)
+	if(orbit.vertices.length>=ctrls.satMaxWidth){
+		orbit.vertices.shift();
+	}		
 
-	var extrusionPath =  new THREE.SplineCurve3( orbit.vertices );
-
+  	var extrusionPath =  new THREE.SplineCurve3( orbit.vertices );
 
 	var extrudeSettings = {
-		// amount			: 1,
-		steps			: ctrls.steps,
-		bevelEnabled	: false,
+		// amount			:10,
+		// curveSegments	: 100000,
+		// steps			: orbit.vertices.length,
+		// bevelEnabled	: false,
 		extrudePath		: extrusionPath,
 	};
+	extrudeSettings.steps = ctrls.satMaxWidth-ctrls.satMaxWidth/2;
 
 	var circleGeometry = new THREE.CircleGeometry( ctrls.sectionradius, ctrls.sectionsides );
 	var orbitSection = new THREE.Shape( circleGeometry.vertices );
 
 	var orbitGeometry = new THREE.ExtrudeGeometry( orbitSection, extrudeSettings );
 
-	var orbitMaterial = new THREE.MeshLambertMaterial( { color: newColor, wireframe: false, shading: THREE.FlatShading } );
+	var orbitMaterial = new THREE.MeshLambertMaterial( { color: newColor, wireframe: true, shading: THREE.FlatShading, side: THREE.FrontSide } );
 	
 	var glassMaterialSmooth = new THREE.MeshPhongMaterial( {
 		color: 0xffffff,
 		specular: 0xffaa55,
 		shininess: 10000,
+		side: THREE.FrontSide,
 		vertexColors: THREE.NoColors,
-		shading: THREE.SmoothShading
+		shading: THREE.SmoothShading,
+		wireframe: true
 	} );
+
 	glassMaterialSmooth.glass = true;
 	glassMaterialSmooth.reflectivity = 0.25;
 	glassMaterialSmooth.refractionRatio = 0.6;
 
-
-	// }
-	
-
-
- 	
-	// if(!scene.orbitaMesh)	{
-
-	orbitMesh = new THREE.Mesh( orbitGeometry, orbitMaterial );
-	scene.add( orbitMesh );
-	// } 
-
-
-	// else {
-	// // scene.remove(orbitaMesh)
-
-	// scene.orbitaMesh.geometry.merge( orbitGeometry, orbitGeometry.matrix );
- //    // orbitaMesh.geometry.vertices = theObjects[i].geo.vertices;  
- //    scene.orbitaMesh.geometry.verticesNeedUpdate = true;
-	// orbitaMesh.setGeometry(orbitaGeometry);
-
-	// }
-
+	if(orbite[orbit.num]==null){
+		orbite[orbit.num] = new THREE.Mesh( orbitGeometry, orbitMaterial );
+		orbitsGroup.add( orbite[orbit.num] );
+	} else {
+		orbite[orbit.num].geometry.dynamic = true;
+        orbite[orbit.num].geometry = orbitGeometry;  
+        orbite[orbit.num].geometry.verticesNeedUpdate = true;
+	}
 }
-
-
-// function drawOrbita(orbita) {
-
-
-// 	// scene.remove(orbitMesh);
-// 	var orbitMaterial = new THREE.MeshLambertMaterial( { color: 0xffaa55, wireframe: true, shading: THREE.FlatShading } );
-	
-// 	// var glassMaterialSmooth = new THREE.MeshPhongMaterial( {
-// 	// 	color: 0xffffff,
-// 	// 	specular: 0xffaa55,
-// 	// 	shininess: 10000,
-// 	// 	vertexColors: THREE.NoColors,
-// 	// 	shading: THREE.SmoothShading
-// 	// } );
-// 	glassMaterialSmooth.glass = true;
-// 	glassMaterialSmooth.reflectivity = 0.25;
-// 	glassMaterialSmooth.refractionRatio = 0.6;
-
-// 	orbitMesh = new THREE.Mesh( orbita, orbitMaterial );
-// 			console.log(orbitMesh.geometry);
-	
-// 	// console.log(orbitMesh.geometry);
-
-// 	scene.add( orbitMesh );
-// }
 
 
 function updateSatPos(num, lat, lon, alt) {
@@ -298,11 +262,10 @@ function updateSatPos(num, lat, lon, alt) {
 	lat =  (lat * time)* Math.PI / 180.0;
 	lon =  (-lon * time)* Math.PI / 180.0; 
 
-
 	var posX = Math.cos(lat) * Math.cos(lon);	
 	var posY = Math.sin(lat);
 	var posZ = Math.cos(lat) * Math.sin(lon) ;
-	var altitude = (20000 + alt)/200;
+	var altitude = (earthRadius + alt/350);
 
 	particleGeometry.vertices[num].x = posX;
 	particleGeometry.vertices[num].y = posY;
@@ -311,22 +274,17 @@ function updateSatPos(num, lat, lon, alt) {
 
 	particleGeometry.verticesNeedUpdate = true;
 
-	currentPosition = new THREE.Vector3(posX, posY, posZ).multiplyScalar(altitude);
-
-	orbits[num].vertices.unshift(currentPosition);
-	orbits[num].vertices.pop();
-	// orbits[num].vertices.push(currentPosition);
-
+	orbits[num].currentPosition = new THREE.Vector3(posX, posY, posZ).multiplyScalar(altitude);
 	orbits[num].num = num;
 
-	updateOrbit(orbits[num]);
+	if(isDrawing){
+		if(orbits[num].num==ctrls.selectedSat){
+			orbits[num].vertices.push(orbits[num].currentPosition);
+			updateOrbit(orbits[num]);
+		}
+	}
+
 }
-
-
-
-// function clearCanvas(array) {
-//  	var array = [];
-// }
 
 
 function addSat(num, lat, lon, alt) {
@@ -337,7 +295,7 @@ function addSat(num, lat, lon, alt) {
 	var posX = Math.cos(lat) * Math.cos(lon); 
 	var posY = Math.sin(lat);
 	var posZ = Math.cos(lat) * Math.sin(lon) ;
-	var altitude = (20000 + alt)/200;
+	var altitude = (earthRadius + alt/350);
 
 	// var colors = [ 0x000000, 0xff0080, 0x8000ff, 0xffffff ];
 	var colors = [0x8000ff];
@@ -348,9 +306,10 @@ function addSat(num, lat, lon, alt) {
 
 	orbits[num] = new THREE.Geometry();	 
 
-	for (i=0; i<2; i++){
-    	orbits[num].vertices.push(new THREE.Vector3(posX, posY, posZ).multiplyScalar(altitude));
-    }
+	// for (var i = 0; i >= 2; i++) {
+	//  	orbits[num].vertices.push(new THREE.Vector3(posX, posY, posZ).multiplyScalar(altitude));
+	// }
+
     orbits[num].dynamic = true;
 }
 
@@ -358,27 +317,29 @@ function animate() {
 
     requestAnimationFrame( animate );
 
-    if(PLAY) {
-		computeStats();
-	}
-	
-	// lightPosition = lightAngle * Math.PI / 180;
-	// light1.position.x = 800*Math.cos(lightPosition) + 0;
-	// light1.position.z = 800*Math.sin(lightPosition) + 0;
-	// lightAngle = lightAngle + 0.4;
-	
-	// console.log(mouseX,mouseY);
+	computeStats();
+
 	time = time + ctrls.speed/100;
 	render();		
 
 
 	if(ctrls.followSatCamera){
+		var currentPosition = orbits[ctrls.selectedSat].currentPosition;
 		camera.position.set(currentPosition.x,currentPosition.y, currentPosition.z).multiplyScalar(4);
-		camera.lookAt(scene.position)
+		camera.lookAt(scene.position);
 	} else {
 	    controls.update();
 	}
 	stats.update();
+
+	if(isExporting){
+		var exporter = new THREE.OBJExporter();
+		isExporting = false;	
+    	exportString( exporter.parse( orbitsGroup.children[0].geometry ) );
+
+	} else {
+		// console.log('not exporting')
+	}
 }
 
 function render() {
@@ -386,6 +347,16 @@ function render() {
     renderer.render(scene, camera);
 }
 
+
+var exportString = function ( output ) {
+
+		var blob = new Blob( [ output ], { type: 'text/plain' } );
+		var objectURL = URL.createObjectURL( blob );
+
+		window.open( objectURL, '_blank' );
+		window.focus();
+
+	};
 
 window.onresize = function() {
 	camera.aspect = window.innerWidth / window.innerHeight;
@@ -571,13 +542,8 @@ function computeStats() {
 
 
 //TODO:
-//REDUCE WIREFRAME LINE NUMBER
-// LET THE CLOCK START WHEN PRESS PLAY
 //ITEGRATE TRACKBALL CONTROLS WITH AN IF STATEMENT TO KEEP IT SPINNING 
-// APPLY TUBEGEOMETRY TO ORBITS
 //NORMALIZE ORBITS RADIUS IN 8 LEVELS
-//STROKE REVEAL
-//ANIMATE!
 //CONNECT EVERY ORBIT WITH 4 LINES TO THE CORE
 //STARS
 //PIXEL NOISE SHADER

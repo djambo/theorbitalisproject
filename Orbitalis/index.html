@@ -14,6 +14,7 @@
 <body>
 	<script type="text/javascript" src="js/libraries/three.min.js"></script>
 	<script type="text/javascript" src="js/libraries/ExplodeModifier.js"></script>
+  <script type="text/javascript" src="js/libraries/OBJExporter.js"></script>
 	<script type="text/javascript" src="js/libraries/tween.min.js"></script>
 	<script type="text/javascript" src="js/libraries/stats.min.js"></script>
 	<script type="text/javascript" src="js/libraries/TrackballControls.js"></script>
@@ -124,16 +125,18 @@
           </form>
         </div> <!-- /satellite_form -->
         <div id="play_pause_buttons">
-          <button id="play_button"
-                  accesskey="p"
-                  title="Update satellite information"
-                  type="button">Play</button>
-          <button id="pause_button"
+          <button id="draw_button"
                   accesskey="s"
                   title="Pause updating satellite information"
-                  type="button">Pause</button>
+                  type="button">Draw</button>
+          <button id="export_button"
+                  accesskey="s"
+                  title="Pause updating satellite information"
+                  type="button">Export</button>
         </div> <!-- /play_pause_buttons -->
+        <ul>
 
+        </ul>
         <!-- <div id="statistics">
           <div id="date">Date</div>
           <table id="positions" style="width:100%" summary="Satellite Coordinates">
@@ -156,15 +159,19 @@
   <script type="text/javascript">
     opsmode = 'i';
 
-    // TOGGLE Play
-    document.getElementById('play_button').onclick = function () {
-        PLAY = true;
-        newColor = "#"+((1<<24)*Math.random()|0).toString(16);
-    };
-    document.getElementById('pause_button').onclick = function () {
-        PLAY = false;
+    // // TOGGLE Play
+    // document.getElementById('play_button').onclick = function () {
+    //     PLAY = true;
+    //     // isDrawing = true;
+    //     newColor = "#"+((1<<24)*Math.random()|0).toString(16);
+    // };
+    document.getElementById('draw_button').onclick = function () {
+        isDrawing = !isDrawing;
     };
 
+    document.getElementById('export_button').onclick = function () {
+        isExporting = !isExporting;
+    };
    
   </script>
   // <script type="text/javascript" src="js/sat_calculations.js"></script>
