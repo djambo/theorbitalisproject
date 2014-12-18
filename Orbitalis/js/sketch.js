@@ -11,7 +11,6 @@ var orbitMesh;
 
 var orbits = [];
 var orbite = [];
-var camNeedReset = false;
 
 
 var orbitsGroup = new THREE.Object3D();
@@ -62,6 +61,7 @@ getSatrecsFromTLEFile('tle/SMD.txt');
 document.getElementById('select_satellite_group').onchange = function () {
    	getSatrecsFromTLEFile('tle/' + this.value + '.txt'); // TODO: security risk?
     newColor = "#"+((1<<24)*Math.random()|0).toString(16);
+
 };
 
 function init() 
@@ -89,7 +89,7 @@ function init()
 	
 	var gui = new dat.GUI();
 
-  	gui.add(ctrls, 'speed', 0, 10);
+  	gui.add(ctrls, 'speed', 0, 100);
   	gui.add(ctrls, 'sectionradius', 1, 20);
   	gui.add(ctrls, 'sectionsides', 3, 20);
   	gui.add(ctrls, 'followSatCamera');
@@ -124,22 +124,34 @@ function init()
 	hemiLight.position.set( 0, 500, 0 );
 	scene.add( hemiLight );
  
+	// SKYDOME
+	// var vertexShader = document.getElementById( 'vertexShader' ).textContent;
+	// var fragmentShader = document.getElementById( 'fragmentShader' ).textContent;
+	// var uniforms = {
+	// 	topColor: 	 { type: "c", value: new THREE.Color( 0x0077ff ) },
+	// 	bottomColor: { type: "c", value: new THREE.Color( 0xffffff ) },
+	// 	// topColor: 	 { type: "c", value: new THREE.Color( 0x000000 ) },
+	// 	// bottomColor: { type: "c", value: new THREE.Color( 0x000000 ) },
+
+	// 	offset:		 { type: "f", value: 33 },
+	// 	exponent:	 { type: "f", value: 0.6 }
+	// }
 	
-	var particleCount = 800,
-	    particles = new THREE.Geometry(),
-	    pMaterial = new THREE.PointCloudMaterial({ color: 0xFFFFFF, size: 4 });
+	// uniforms.topColor.value.copy( hemiLight.color );
+	// scene.fog.color.copy( uniforms.bottomColor.value );
 
-	for (var p = 0; p < particleCount; p++) {
-		var pX = Math.random() * 6000 - 3000,
-		    pY = Math.random() * 6000 - 3000,
-		    pZ = Math.random() * 6000 - 3000,
-		    particle = new THREE.Vector3(pX, pY, pZ);
+	var skyMap = THREE.ImageUtils.loadTexture( "images/skymap2.png" );
 
-		particles.vertices.push(particle);
-	}
+	var skyGeo = new THREE.SphereGeometry( 10000, 32, 15 );
+	// var skyMat = new THREE.ShaderMaterial( { vertexShader: vertexShader, fragmentShader: fragmentShader, uniforms: uniforms, side: THREE.BackSide } );
+	var skyMat = new THREE.MeshLambertMaterial( { 
+		map: skyMap, 
+		side: THREE.BackSide,
+		// color: 0x2dceff
+	} );
 
-	var stars = new THREE.PointCloud( particles, pMaterial);
-	scene.add(stars);
+	var sky = new THREE.Mesh( skyGeo, skyMat );
+	// scene.add( sky );
 
 
 	////////////
@@ -182,7 +194,7 @@ function createSatGroup(){
 		depthTest: true, 
 		opacity: 0.5, 
 		sizeAttenuation: false, 
-	 	map: THREE.ImageUtils.loadTexture("images/sat.gif"),
+	 	map: THREE.ImageUtils.loadTexture("images/spark.png"),
   		blending: THREE.AdditiveBlending,
 		transparent: true
 	});
@@ -205,21 +217,20 @@ function updateOrbit(orbit) {
   	var extrusionPath =  new THREE.SplineCurve3( orbit.vertices );
 
 	var extrudeSettings = {
-		steps   			: 100,
 		// amount			:10,
 		// curveSegments	: 100000,
 		// steps			: orbit.vertices.length,
 		// bevelEnabled	: false,
 		extrudePath		: extrusionPath,
 	};
-	// extrudeSettings.steps = ctrls.satMaxWidth-ctrls.satMaxWidth/2;
+	extrudeSettings.steps = ctrls.satMaxWidth-ctrls.satMaxWidth/2;
 
 	var circleGeometry = new THREE.CircleGeometry( ctrls.sectionradius, ctrls.sectionsides );
 	var orbitSection = new THREE.Shape( circleGeometry.vertices );
 
 	var orbitGeometry = new THREE.ExtrudeGeometry( orbitSection, extrudeSettings );
 
-	var orbitMaterial = new THREE.MeshLambertMaterial( { color: newColor, wireframe: false, shading: THREE.FlatShading, side: THREE.FrontSide } );
+	var orbitMaterial = new THREE.MeshLambertMaterial( { color: newColor, wireframe: true, shading: THREE.FlatShading, side: THREE.FrontSide } );
 	
 	var glassMaterialSmooth = new THREE.MeshPhongMaterial( {
 		color: 0xffffff,
@@ -316,18 +327,12 @@ function animate() {
 		var currentPosition = orbits[ctrls.selectedSat].currentPosition;
 		camera.position.set(currentPosition.x,currentPosition.y, currentPosition.z).multiplyScalar(4);
 		camera.lookAt(scene.position);
-		camNeedReset = true;
 	} else {
-		if(camNeedReset){
-			controls.reset();
-			camNeedReset = false;
-		}
 	    controls.update();
 	}
 	stats.update();
 
 	if(isExporting){
-		isDrawing = false;
 		var exporter = new THREE.OBJExporter();
 		isExporting = false;	
     	exportString( exporter.parse( orbitsGroup.children[0].geometry ) );
