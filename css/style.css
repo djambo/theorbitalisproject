@@ -15,6 +15,17 @@ body {
 	background: rgb(10,30,60);
 }
 
+#container {
+	overflow: hidden;
+/*    background-color: #000;
+*/  width: 70%;
+    position: absolute;
+    height: 100%;
+    right: 0px;
+    margin: 0px;
+    padding: 0px;
+
+}
 
 
 #content {
@@ -133,17 +144,6 @@ header h1 span {
 	transition: all 0.3s ease;
 }
 
-
-
-/* Canvas */
-
-canvas{
-	z-index: 0;
-	position: absolute;
-	top: 0px;
-	margin: 0;
-	padding: 0;
-}
 
 
 

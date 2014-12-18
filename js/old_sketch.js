@@ -13,10 +13,8 @@ var orbits = [];
 var orbite = [];
 var camNeedReset = false;
 
-var container;
-var orbitsGroup = new THREE.Object3D();
 
-var followSatCamera = false;
+var orbitsGroup = new THREE.Object3D();
 
 var newColor;
 
@@ -26,8 +24,6 @@ var isExporting = false;
 var currentPosition;
 var isDrawing = false;
 
-var selectedSat;
-
 var ctrls = {
 	satMaxWidth: 500,
 	name: "David Walsh",
@@ -35,7 +31,8 @@ var ctrls = {
 	steps: 1,
 	sectionradius: 1, 
 	sectionsides: 3,
-	// selectedSat: 0
+	followSatCamera: false,
+	selectedSat: 0
 };
 
 var earthRadius = 100;
@@ -62,36 +59,42 @@ init();
 animate();
 
 getSatrecsFromTLEFile('tle/SMD.txt');
-// document.getElementById('select_satellite_group').onchange = function () {
-//    	getSatrecsFromTLEFile('tle/' + this.value + '.txt'); // TODO: security risk?
-//     newColor = "#"+((1<<24)*Math.random()|0).toString(16);
-// };
+document.getElementById('select_satellite_group').onchange = function () {
+   	getSatrecsFromTLEFile('tle/' + this.value + '.txt'); // TODO: security risk?
+    newColor = "#"+((1<<24)*Math.random()|0).toString(16);
+};
 
 function init() 
 {
-	container = document.getElementById("container");
 	// SCENE
 	scene = new THREE.Scene();
-	// CAMERA
- 	camera = new THREE.PerspectiveCamera(45, container.offsetWidth / container.offsetHeight, 0.1, 1000000);
 
+	// CAMERA
+	var SCREEN_WIDTH = window.innerWidth, SCREEN_HEIGHT = window.innerHeight;
+	var VIEW_ANGLE = 45, ASPECT = SCREEN_WIDTH / SCREEN_HEIGHT, NEAR = 0.1, FAR = 1000000;
+	camera = new THREE.PerspectiveCamera( VIEW_ANGLE, ASPECT, NEAR, FAR);
 	scene.add(camera);
 	camera.position.set(0,150,800);
 	camera.lookAt(scene.position);	
 	// RENDERER
-	renderer = new THREE.WebGLRenderer( {antialias:true, alpha: true } );
-	renderer.setSize(container.offsetWidth, container.offsetHeight);
-	container.appendChild(renderer.domElement);
-
- 	// camera
+	if ( Detector.webgl )
+		renderer = new THREE.WebGLRenderer( {antialias:true} );
+	else
+		renderer = new THREE.CanvasRenderer(); 
+	renderer.setSize(SCREEN_WIDTH, SCREEN_HEIGHT);
+	container = document.createElement( 'div' );
+	document.body.appendChild( container );
+	container.appendChild( renderer.domElement );
+	// EVENTS
+	
 	var gui = new dat.GUI();
 
   	gui.add(ctrls, 'speed', 0, 10);
   	gui.add(ctrls, 'sectionradius', 1, 20);
   	gui.add(ctrls, 'sectionsides', 3, 20);
-  	// gui.add(ctrls, 'followSatCamera');
+  	gui.add(ctrls, 'followSatCamera');
   	gui.add(ctrls, 'satMaxWidth', 0, 500);
-   	// gui.add(ctrls, 'selectedSat', 0, 10);
+   	gui.add(ctrls, 'selectedSat', 0, 10);
    	gui.add(ctrls, 'steps', 2, 10000);
 	// scene.fog = new THREE.FogExp2( 0xFFFFFF, 0.0002 );
 
@@ -109,7 +112,7 @@ function init()
 	stats.domElement.style.position = 'absolute';
 	stats.domElement.style.bottom = '0px';
 	stats.domElement.style.zIndex = 100;
-	// container.appendChild( stats.domElement );
+	container.appendChild( stats.domElement );
 
 	light2 = new THREE.PointLight(0xffffff, 0.9);
 	light2.position.set(1000,0,1000);
@@ -264,7 +267,7 @@ function updateSatPos(num, lat, lon, alt) {
 	orbits[num].num = num;
 
 	if(isDrawing){
-		if(orbits[num].num==selectedSat){
+		if(orbits[num].num==ctrls.selectedSat){
 			orbits[num].vertices.push(orbits[num].currentPosition);
 			updateOrbit(orbits[num]);
 		}
@@ -309,8 +312,8 @@ function animate() {
 	render();		
 
 
-	if(followSatCamera){
-		var currentPosition = orbits[selectedSat].currentPosition;
+	if(ctrls.followSatCamera){
+		var currentPosition = orbits[ctrls.selectedSat].currentPosition;
 		camera.position.set(currentPosition.x,currentPosition.y, currentPosition.z).multiplyScalar(4);
 		camera.lookAt(scene.position);
 		camNeedReset = true;
@@ -321,14 +324,14 @@ function animate() {
 		}
 	    controls.update();
 	}
-	// stats.update();
+	stats.update();
 
 	if(isExporting){
 		isDrawing = false;
 		var exporter = new THREE.OBJExporter();
 		isExporting = false;	
     	exportString( exporter.parse( orbitsGroup.children[0].geometry ) );
-	
+
 	} else {
 		// console.log('not exporting')
 	}
@@ -351,11 +354,9 @@ var exportString = function ( output ) {
 	};
 
 window.onresize = function() {
-	camera.aspect = container.offsetWidth / container.offsetHeight;
+	camera.aspect = window.innerWidth / window.innerHeight;
 	camera.updateProjectionMatrix();
-	renderer.setSize(container.offsetWidth, container.offsetHeight);
-	// camera.aspect = window.innerWidth / window.innerHeight;
-	// renderer.setSize( window.innerWidth, window.innerHeight );
+	renderer.setSize( window.innerWidth, window.innerHeight );
 }
 
 function mouseMonitor( event ) {
