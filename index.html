@@ -59,16 +59,17 @@
 				title="Start drawing"
 				type="button">
 				Draw</button>
+			<button id="camera_button"
+				accesskey="s"
+				title="Switch between cameras"
+				type="button">
+				Camera</button>
+
 			<button id="export_button"
 				accesskey="s"
 				title="Export geometry"
 				type="button">
 				Export</button>
-			<button id="camera_button"
-				accesskey="s"
-				title="Switch between cameras"
-				type="button">
-				Switch Camera</button>
 		</div><!-- /satellites-controls -->
 	</section> <!-- /content -->
 
@@ -166,12 +167,12 @@ NASA Science
   <script type="text/javascript">
     opsmode = 'i';
 
-	$( "li" ).click(function() {
+	$( "#satellites li" ).click(function() {
 		selectedSat = $(this).parent().children().index(this);
 		$( "#satellites li" ).removeClass('active');
 		$( this ).addClass('active');
 		newColor = "#"+((1<<24)*Math.random()|0).toString(16);
-    });
+  });
 
   	// $( "#sat_1" ).click(function() {
    //  	// selectedSat = 1;
@@ -179,15 +180,17 @@ NASA Science
    //  });
 
 	$( "#draw_button" ).click(function() {
-        isDrawing = !isDrawing;
+	  isDrawing = !isDrawing;
+		$( this ).toggleClass('active');
 	});
 
 	$( "#camera_button" ).click(function() {
 		followSatCamera = !followSatCamera;
+		$( this ).toggleClass('active');
 	});
 
 	$( "#export_button" ).click(function() {
-        isExporting = !isExporting;
+    isExporting = !isExporting;
 	});
 
   </script>

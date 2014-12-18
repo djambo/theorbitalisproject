@@ -154,13 +154,23 @@ header h1 span {
 	transition: all 0.5s ease;
 }
 
+#satellites-controls button:nth-child(3) {
+	width: 95%;
+}
+
+#satellites-controls button.active {
+	background: rgba(45, 225, 175, 0.5);
+	color: rgba(8,52,97,0.8);
+	box-shadow: inset 0 0 0 2px rgba(145,180,200,0);
+	transition: all 0.3s ease;
+}
+
 #satellites-controls button:hover {
 	background: rgba(45, 225, 175, 0.8);
 	color: rgba(8,52,97,0.8);
 	box-shadow: inset 0 0 0 2px rgba(145,180,200,0);
 	transition: all 0.3s ease;
 }
-
 
 
 
