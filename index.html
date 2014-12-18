@@ -29,10 +29,9 @@
 
 <body>
 
-
 	<section id="content" style="z-index: 100;">
 		<header>
-			<h1>The <span>Orbitalis</span> Project</h1>
+			<h1 id="site-title">The <span>Orbitalis</span> Project</h1>
 		</header>
 
 		<ul id="satellites">
@@ -64,7 +63,6 @@
 				title="Switch between cameras"
 				type="button">
 				Camera</button>
-
 			<button id="export_button"
 				accesskey="s"
 				title="Export geometry"
@@ -91,6 +89,30 @@
 		});
 	</script>
 	<!-- /intro -->
+
+
+	<section class="about">
+		<div class="about-container">
+			<h1>The <span>Orbitalis</span> Project</h1>
+			<p>This Poject was created as part of <a href="https://github.com/rybotron/wnm498genart_f14" title="class repo on github">Ryan Berkey's Fall 2014 Generative Art &amp; Creative Code class</a>, at the Academy of Art University, by <a href="http://gianlucamartini.me/">Gianluca&nbsp;Martini</a>, <a href="http://hugobaeta.com/">Hugo&nbsp;Baeta</a>, and <a href="http://junejk.com/">June&nbsp;Jiwoong&nbsp;Kim</a></p>
+			<nav class="about-action">
+				<a id="close">Close</a>
+			</nav>
+		</div>
+	</section>
+
+	<script type="text/javascript" >
+	$( "#site-title").click(function(){
+		$(".about").css("visibility", "visible");
+		$(".about").css("opacity", "1");
+	});
+	$( "#close" ).click(function() {
+		$(".about").css("opacity", "0");
+		$(".about").css("visibility", "hidden");
+	});
+	</script>
+	<!-- /intro -->
+
 
 
 	<div id="container">
