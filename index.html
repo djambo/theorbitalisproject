@@ -161,12 +161,12 @@ NASA Science
   <script type="text/javascript">
     opsmode = 'i';
 
-	$( "#satellites li" ).click(function() {
-		$(this).parent().children().index(this);
-    	selectedSat = $(this).index($( "#satellites" ));
+	$( "li" ).click(function() {
+		selectedSat = $(this).parent().children().index(this);
 		$( "#satellites li" ).removeClass('active');
 		$( this ).addClass('active');
 		followSatCamera = true;
+		newColor = "#"+((1<<24)*Math.random()|0).toString(16);
     });
 
   	// $( "#sat_1" ).click(function() {

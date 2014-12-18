@@ -53,7 +53,7 @@ var WHICHCONST      = 84;   //
 var TYPERUN         = 'm';  // 'm'anual, 'c'atalog, 'v'erification
 var TYPEINPUT       = 'n';  // HACK: 'now'
 var PLAY            = true;
-var SAT_POSITIONS_MAX = 10; // Limit numer of positions displayed to save CPU
+var SAT_POSITIONS_MAX = 16; // Limit numer of positions displayed to save CPU
 var CALC_INTERVAL_MS  = 0;
 var GLOBAL_MARKERS = [];
 //==========================================
