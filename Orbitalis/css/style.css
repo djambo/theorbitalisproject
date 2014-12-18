@@ -1,40 +1,134 @@
+/*
+Project: The Orbitalis Project
+Authors: Gianluca Martini, Hugo Baeta, June Jiwoong Kim
+*/
+
+
 body {
 	background-color: black;
 	padding: 0;
 	margin: 0 !important;
-	font-family: 'Droid Sans', sans-serif;
+	font-family: 'Titillium Web', sans-serif;
+	font-size: 16px;
+	font-weight: 300;
+	color: rgba(255,255,255,.9);
 }
 
-#wrapper {
+
+
+#content {
 	position: absolute;
-	z-index: 10;	
-}
- 
-#sat_list {
-	padding: 8px;
-	position: absolute;
-	border: 2px solid white;
+	z-index: 10;
+	width: 30%;
+	height: 100%;
+	background: rgba(20,20,45,0.8);
+	overflow-y: auto;
 }
 
-#sat_list li {
-	margin: 0px;
-	display: block;
-	width: 40px;
-	height: 40px;
-	background-color: white;
-	margin-bottom: 10px;
+
+
+header {
+	width: 92%;
+	padding: 20% 4%;
 }
 
-#sat_list li:hover {
-	background-color: yellow;
+header h1 {
+	margin: 0;
+	padding: 0;
+	color: white;
+	font-weight: 200;
+	font-size: 16px;
+	letter-spacing: 3px;
+	text-transform: uppercase;
+	text-align: center;
+	line-height: 1;
+	color: rgba(245,250,255,0.5);
 }
 
-canvas{ 
+header h1 span {
+	font-weight: 300;
+	color: rgba(245,250,255,0.8);
+}
+
+
+
+#satellites {
+	width: 96%;
+	margin: 0;
+	padding: 4% 2%;
+	border-top: 1px dashed rgba(245,250,255,0.1);
+	border-bottom: 1px dashed rgba(245,250,255,0.1);
+}
+
+#satellites li {
+	display: inline-block;
+	width: 20%;
+	margin: 2%;
+	padding: 0;
+	background: rgba(245,250,255,0.2);
+	text-align: center;
+	font-size: 200%;
+	line-height: 2.3;
+	letter-spacing: 3px;
+	color: rgba(15,10,35,0.5);
+}
+
+#satellites li:hover {
+	background: rgba(145,180,200,0.8);
+	color: rgba(245,250,255,0.5);
+	cursor: pointer;
+}
+
+#satellites li:active {
+	background: rgba(145,180,200,0.8);
+	color: rgba(245,250,255,0.5);
+}
+
+
+
+#satellites-controls {
+	width: 96%;
+	margin: 0;
+	padding: 4% 2%;
+
+	border-bottom: 1px dashed rgba(245,250,255,0.1);
+}
+
+#satellites-controls button {
+	width: 45%;
+	margin: 2%;
+	padding: 0;
+	outline: none;
+	border: none;
+	background: rgba(145,180,200,0.8);
+	color: rgba(15,10,35,0.8);
+	line-height: 2;
+}
+
+#satellites-controls button:hover {
+	background: rgba(145,180,200,1);
+	color: rgba(15,10,35,1);
+}
+
+
+
+canvas{
 	z-index: 0;
 	position: absolute;
-	padding:0; 
 	top: 0px;
+	margin: 0;
+	padding: 0;
 }
+
+
+
+
+
+
+
+
+
+/*
 
 #about {
 	display: none;
@@ -61,10 +155,6 @@ canvas{
 #about a {
 	color: white;
 	text-decoration: underline;
-}
-
-header {
-
 }
 
 #nav_container {
@@ -132,19 +222,4 @@ header {
 	padding-right: 30px;
 }
 
-h1 {
-	color: white;
-	font-weight: normal;
-	font-size: 34px;
-	-webkit-transition:1.8s;
-			transition:1.8s;
-}
-
-h2 {
-	margin-top: -14px;
-	color: white;
-	font-size: 20px;
-	font-weight: normal;
-	-webkit-transition:1.8s;
-			transition:1.8s;
-}
+*/
