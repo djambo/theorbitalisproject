@@ -32,12 +32,10 @@ var selectedSat;
 
 var ctrls = {
 	satMaxWidth: 500,
-	name: "David Walsh",
 	speed: 1,
 	steps: 1,
 	sectionradius: 1, 
 	sectionsides: 3,
-	// selectedSat: 0
 };
 
 var earthRadius = 100;
@@ -88,8 +86,8 @@ function init()
 	var gui = new dat.GUI();
 
   	gui.add(ctrls, 'speed', 0, 10);
-  	gui.add(ctrls, 'sectionradius', 1, 20);
-  	gui.add(ctrls, 'sectionsides', 3, 20);
+  	gui.add(ctrls, 'sectionradius', 2, 20);
+  	gui.add(ctrls, 'sectionsides', 4, 20);
   	gui.add(ctrls, 'satMaxWidth', 0, 1000);
    	gui.add(ctrls, 'steps', 2, 10000);
 
@@ -203,23 +201,23 @@ function updateOrbit(orbit) {
 		// bevelEnabled	: false,
 		extrudePath		: extrusionPath,
 	};
-	extrudeSettings.steps = 500;
+	extrudeSettings.steps = orbit.vertices.length;
 
 	var circleGeometry = new THREE.CircleGeometry( ctrls.sectionradius, ctrls.sectionsides );
 	var orbitSection = new THREE.Shape( circleGeometry.vertices );
 
 	var orbitGeometry = new THREE.ExtrudeGeometry( orbitSection, extrudeSettings );
 
-	var orbitMaterial = new THREE.MeshLambertMaterial( { color: newColor, wireframe: false, shading: THREE.FlatShading, side: THREE.FrontSide } );
+	// var orbitMaterial = new THREE.MeshLambertMaterial( { color: newColor, wireframe: false, shading: THREE.FlatShading, side: THREE.FrontSide } );
 	
 	var glassMaterialSmooth = new THREE.MeshPhongMaterial( {
-		color: 0xffffff,
+		color: newColor,
 		specular: 0xffaa55,
 		shininess: 10000,
 		side: THREE.FrontSide,
 		vertexColors: THREE.NoColors,
 		shading: THREE.SmoothShading,
-		wireframe: true
+		wireframe: false
 	} );
 
 	glassMaterialSmooth.glass = true;
@@ -227,15 +225,28 @@ function updateOrbit(orbit) {
 	glassMaterialSmooth.refractionRatio = 0.6;
 
 	if(orbite[orbit.num]==null){
-		orbite[orbit.num] = new THREE.Mesh( orbitGeometry, orbitMaterial );
+		orbite[orbit.num] = new THREE.Mesh( orbitGeometry, glassMaterialSmooth );
 		orbitsGroup.add( orbite[orbit.num] );
 	} else {
-		orbite[orbit.num].geometry.dynamic = true;
+		orbite[orbit.num].geometry.dispose() 
+		// orbite[orbit.num].geometry.dynamic = true;
         orbite[orbit.num].geometry = orbitGeometry;  
         orbite[orbit.num].geometry.verticesNeedUpdate = true;
+		orbitGeometry.dispose() 
+
+        // orbite[orbit.num].geometry.computeFaceNormals();
 	}
 }
 
+// function computeCoords() {
+// 	lat =  (lat * time)* Math.PI / 180.0;
+// 	lon =  (-lon * time)* Math.PI / 180.0; 
+
+// 	var posX = Math.cos(lat) * Math.cos(lon);	
+// 	var posY = Math.sin(lat);
+// 	var posZ = Math.cos(lat) * Math.sin(lon) ;
+// 	var altitude = (earthRadius + alt/350);
+// }
 
 function updateSatPos(num, lat, lon, alt) {
 	
@@ -254,11 +265,12 @@ function updateSatPos(num, lat, lon, alt) {
 
 	particleGeometry.verticesNeedUpdate = true;
 
-	orbits[num].currentPosition = new THREE.Vector3(posX, posY, posZ).multiplyScalar(altitude);
 	orbits[num].num = num;
+	orbits[num].currentPosition = new THREE.Vector3(posX, posY, posZ).multiplyScalar(altitude);
 
 	if(isDrawing){
-		if(orbits[num].num==selectedSat){
+		if(orbits[num].num==selectedSat) {
+
 			orbits[num].vertices.push(orbits[num].currentPosition);
 			updateOrbit(orbits[num]);
 		}
@@ -286,10 +298,6 @@ function addSat(num, lat, lon, alt) {
 
 	orbits[num] = new THREE.Geometry();	 
 
-	// for (var i = 0; i >= 2; i++) {
-	//  	orbits[num].vertices.push(new THREE.Vector3(posX, posY, posZ).multiplyScalar(altitude));
-	// }
-
     orbits[num].dynamic = true;
 }
 
@@ -305,7 +313,7 @@ function animate() {
 
 	if(followSatCamera){
 		var currentPosition = orbits[selectedSat].currentPosition;
-		camera.position.set(currentPosition.x,currentPosition.y, currentPosition.z).multiplyScalar(4);
+		camera.position.set(currentPosition.x,currentPosition.y,currentPosition.z).multiplyScalar(4);
 		camera.lookAt(scene.position);
 		camNeedReset = true;
 	} else {
