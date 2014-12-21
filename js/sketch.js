@@ -33,7 +33,6 @@ var selectedSat;
 var ctrls = {
 	satMaxWidth: 500,
 	speed: 1,
-	steps: 1,
 	sectionradius: 1, 
 	sectionsides: 3,
 };
@@ -89,7 +88,6 @@ function init()
   	gui.add(ctrls, 'sectionradius', 2, 20);
   	gui.add(ctrls, 'sectionsides', 4, 20);
   	gui.add(ctrls, 'satMaxWidth', 0, 1000);
-   	gui.add(ctrls, 'steps', 2, 10000);
 
 	// CONTROLS
 	controls = new THREE.TrackballControls( camera, renderer.domElement );
@@ -193,39 +191,32 @@ function updateOrbit(orbit) {
 
   	var extrusionPath =  new THREE.SplineCurve3( orbit.vertices );
 
-	var extrudeSettings = {
-		// steps   			: 100,
-		// amount			:10,
-		// curveSegments	: 100000,
-		// steps			: orbit.vertices.length,
-		// bevelEnabled	: false,
-		extrudePath		: extrusionPath,
-	};
-	extrudeSettings.steps = orbit.vertices.length;
+	var orbitGeometry = new THREE.TubeGeometry(
+	    extrusionPath,  //extrusionPath
+	    orbit.vertices.length,    //segments
+	    ctrls.sectionradius,     //radius
+	    ctrls.sectionsides,     //radiusSegments
+	    false  //closed
+	);
 
-	var circleGeometry = new THREE.CircleGeometry( ctrls.sectionradius, ctrls.sectionsides );
-	var orbitSection = new THREE.Shape( circleGeometry.vertices );
-
-	var orbitGeometry = new THREE.ExtrudeGeometry( orbitSection, extrudeSettings );
-
-	// var orbitMaterial = new THREE.MeshLambertMaterial( { color: newColor, wireframe: false, shading: THREE.FlatShading, side: THREE.FrontSide } );
+	var orbitMaterial = new THREE.MeshLambertMaterial( { color: newColor, wireframe: false, shading: THREE.FlatShading, side: THREE.FrontSide } );
 	
-	var glassMaterialSmooth = new THREE.MeshPhongMaterial( {
-		color: newColor,
-		specular: 0xffaa55,
-		shininess: 10000,
-		side: THREE.FrontSide,
-		vertexColors: THREE.NoColors,
-		shading: THREE.SmoothShading,
-		wireframe: false
-	} );
+	// var glassMaterialSmooth = new THREE.MeshPhongMaterial( {
+	// 	color: newColor,
+	// 	specular: 0xffaa55,
+	// 	shininess: 10000,
+	// 	side: THREE.FrontSide,
+	// 	vertexColors: THREE.NoColors,
+	// 	shading: THREE.SmoothShading,
+	// 	wireframe: false
+	// } );
 
-	glassMaterialSmooth.glass = true;
-	glassMaterialSmooth.reflectivity = 0.25;
-	glassMaterialSmooth.refractionRatio = 0.6;
+	// glassMaterialSmooth.glass = true;
+	// glassMaterialSmooth.reflectivity = 0.25;
+	// glassMaterialSmooth.refractionRatio = 0.6;
 
 	if(orbite[orbit.num]==null){
-		orbite[orbit.num] = new THREE.Mesh( orbitGeometry, glassMaterialSmooth );
+		orbite[orbit.num] = new THREE.Mesh( orbitGeometry, orbitMaterial );
 		orbitsGroup.add( orbite[orbit.num] );
 	} else {
 		orbite[orbit.num].geometry.dispose() 
@@ -234,7 +225,7 @@ function updateOrbit(orbit) {
         orbite[orbit.num].geometry.verticesNeedUpdate = true;
 		orbitGeometry.dispose() 
 
-        // orbite[orbit.num].geometry.computeFaceNormals();
+        orbite[orbit.num].geometry.computeFaceNormals();
 	}
 }
 
