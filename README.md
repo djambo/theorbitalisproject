@@ -1,5 +1,5 @@
 # Conclusion: The Orbitalis Project
-See the live project: [http://hugobaeta.github.io/completion](http://hugobaeta.github.io/completion)
+See the live project: [http://djambo.github.io/completion](http://djambo.github.io/completion)
 
 Final collaborative project for [Ryan Berkey's Generative Art &amp; Creative Code class](https://github.com/rybotron/wnm498genart_f14/wiki) by [Gianluca Martini](http://gianlucamartini.me/), [Hugo Baeta](http://hugobaeta.com), and [June Jiwoong Kim](http://junejk.com/)
 
