@@ -8,14 +8,15 @@
 	<meta name="apple-mobile-web-app-title" content="The Orbitalis Project">
 	<meta name="apple-mobile-web-app-capable" content="yes">
 	<meta name="apple-mobile-web-app-status-bar-style"content="black">
-
+	
 	<link rel="stylesheet" href="css/normalize.css" type="text/css" media="screen"/>
-  <link rel="stylesheet" type="text/css" href="css/style.css">
+  	<link rel="stylesheet" type="text/css" href="css/style.css">
 	<link href='http://fonts.googleapis.com/css?family=Titillium+Web:200,300,700' rel='stylesheet' type='text/css'>
 
 	<script type="text/javascript" src="js/libraries/three.min.js"></script>
-	<script type="text/javascript" src="js/libraries/ExplodeModifier.js"></script>
-	<script type="text/javascript" src="js/libraries/OBJExporter.js"></script>
+	<script type="text/javascript" src="js/libraries/STLExporter.js"></script>
+    <script Type="text/javascript" src="js/libraries/FileSaver.js"></script>
+
 	<script type="text/javascript" src="js/libraries/tween.min.js"></script>
 	<script type="text/javascript" src="js/libraries/stats.min.js"></script>
 	<script type="text/javascript" src="js/libraries/TrackballControls.js"></script>
@@ -25,6 +26,7 @@
 	<script type="text/javascript" src="js/libraries/isat.js"></script>
 	<script type="text/javascript" src="js/libraries/Cesium.js"></script>
 	<script type="text/javascript" src="js/libraries/RaytracingRenderer.js"></script>
+	<script type="text/javascript" src="js/libraries/ShaderParticles.min.js"></script>
 </head>
 
 <body>
@@ -34,24 +36,66 @@
 			<h1>The <span>Orbitalis</span> Project</h1>
 		</header>
 
-		<ul id="satellites">
-			<li id="sat_0">01</li>
-			<li id="sat_1">02</li>
-			<li id="sat_2">03</li>
-			<li id="sat_3">04</li>
-			<li id="sat_4">05</li>
-			<li id="sat_5">06</li>
-			<li id="sat_6">07</li>
-			<li id="sat_7">08</li>
-			<li id="sat_8">09</li>
-			<li id="sat_9">10</li>
-			<li id="sat_10">11</li>
-			<li id="sat_11">12</li>
-			<li id="sat_12">13</li>
-			<li id="sat_13">14</li>
-			<li id="sat_14">15</li>
-			<li id="sat_15">16</li>
-		</ul><!-- /satellites -->
+
+		<div id="satellite_form">
+			<select id="select_satellite_group">
+			<option value="SMD">NASA Science</option>
+			<optgroup class="second_level" label="Special Interest">
+			<option value="visual"> 100 (or so) Brightest</option>
+			<option value="cosmos-2251-debris"> COSMOS 2251 Debris</option>
+			<option value="1999-025"> FENGYUN 1C Debris</option>
+			<option value="iridium-33-debris"> IRIDIUM 33 Debris</option>
+			<option value="tle-new"> Last 30 Days' Launches</option>
+			<option value="stations"> Space Stations</option>
+			</optgroup>
+			<optgroup class="second_level" label="Weather &amp; Earth Resources">
+				<option value="dmc"> Disaster Monitoring</option>
+				<option value="resource"> Earth Resources</option>
+				<option value="goes"> GOES</option>
+				<option value="noaa"> NOAA</option>
+				<option value="sarsat"> Search &amp; Rescue (SARSAT)</option>
+				<option value="tdrss"> Tracking and Data Relay Satellite</option>
+				<option value="weather"> Weather</option>
+			</optgroup>
+			<optgroup class="second_level" label="Communications">
+				<option value="amateur"> Amateur Radio</option>
+				<option value="x-comm"> Experimental</option>
+				<option value="geo"> Geostationary</option>
+				<option value="globalstar"> Globalstar</option>
+				<option value="gorizont"> Gorizont</option>
+				<option value="intelsat"> Intelsat</option>
+				<option value="iridium"> Iridium</option>
+				<option value="molniya"> Molniya</option>
+				<option value="other-comm"> Other</option>
+				<option value="orbcomm"> Orbcomm</option>
+				<option value="raduga"> Raduga</option>
+			</optgroup>
+			<optgroup class="second_level" label="Navigation">
+				<option value="gps-ops"> GPS Operational</option>
+				<option value="galileo"> Galileo</option>
+				<option value="glo-ops"> Glonass Operational</option>
+				<option value="nnss"> Navy Navigation Satellite System</option>
+				<option value="musson"> Russian LEO Navigation</option>
+				<option value="sbas"> Satellite-Based Augmentation System</option>
+			</optgroup>
+			<optgroup class="second_level" label="Scientific">
+				<option value="education"> Education</option>
+				<option value="engineering"> Engineering</option>
+				<option value="geodetic"> Geodetic</option>
+				<option value="science"> Space &amp; Earth Science</option>
+			</optgroup>
+			<optgroup class="second_level" label="Miscellaneous">
+				<option value="cubesat"> CubeSats</option>
+				<option value="military"> Miscellaneous Military</option>
+				<option value="other"> Other</option>
+				<option value="radar"> Radar Calibration</option>
+			</optgroup>
+			</select>
+		</div>
+
+
+		<ul id="satellites"></ul> 
+
 		<div id="satellites-controls">
 			<button id="draw_button"
 				accesskey="s"
@@ -68,6 +112,13 @@
 				title="Export geometry"
 				type="button">
 				Export</button>
+<!-- 			<button id="clear_button"
+				accesskey="s"
+				title="Clear orbits"
+				type="button">
+				Clear</button> -->
+			<input id="time-slider" type="range" min="1" max="10" value="1" step="0.01" onChange="speed=value"/>
+		
 		</div><!-- /satellites-controls -->
 	</section> <!-- /content -->
 
@@ -75,20 +126,12 @@
 	<section class="intro">
 		<div class="intro-container">
 			<h1>The <span>Orbitalis</span> Project</h1>
-			<p>Orbitalis is an interactive artwork simulation that works with live data from the satellites position orbiting our planet. Start by selecting what satellites you want to see in your simulation and then press "Draw".</p>
+			<p>Orbitalis is an interactive artwork simulation that works with live data from the satellites position orbiting our planet. Start by selecting what satellites you want to see in your simulation and then press "Draw". Once you are done drawing your orbits, press "Export" to download a 3D model ready for print.</p>
 			<nav class="intro-action">
 				<a id="start">Start</a>
 			</nav>
 		</div>
 	</section>
-
-	<script type="text/javascript" >
-		$( "#start" ).click(function() {
-			$(".intro").css("opacity", "0");
-			$(".intro").css("visibility", "hidden");
-		});
-	</script>
-	<!-- /intro -->
 
 
 	<section class="about">
@@ -101,122 +144,104 @@
 		</div>
 	</section>
 
-	<script type="text/javascript" >
-	$( "#site-title").click(function(){
-		$(".about").css("visibility", "visible");
-		$(".about").css("opacity", "1");
-	});
-	$( "#close" ).click(function() {
-		$(".about").css("opacity", "0");
-		$(".about").css("visibility", "hidden");
-	});
+	<div id="container"></div><!-- Full-size Canvas -->
+
+	<script type="text/javascript">
+		opsmode = 'i';
 	</script>
-	<!-- /intro -->
+
+	<!--SHADER PER IL GLOW-->
+	<script id="vertexShader" type="x-shader/x-vertex">
+	uniform vec3 viewVector;
+	uniform float c;
+	uniform float p;
+	varying float intensity;
+	void main() 
+	{
+	    vec3 vNormal = normalize( normalMatrix * normal );
+		vec3 vNormel = normalize( normalMatrix * viewVector );
+		intensity = pow( c - dot(vNormal, vNormel), p );
+		
+	    gl_Position = projectionMatrix * modelViewMatrix * vec4( position, 1.0 );
+	}
+	</script>
+
+	<!-- fragment shader a.k.a. pixel shader -->
+	<script id="fragmentShader" type="x-shader/x-vertex"> 
+	uniform vec3 glowColor;
+	varying float intensity;
+	void main() 
+	{
+		vec3 glow = glowColor * intensity;
+	    gl_FragColor = vec4( glow, 1.0 );
+	}
+	</script>
 
 
 
-	<div id="container">
-	</div><!-- Full-size Canvas -->
-
-
-
-
-<!--
-
-<div id="satellite_form">
-<form id="controls" action="">
-<select id="select_satellite_group">
-<option value="SMD">
-NASA Science
-</option>
-<optgroup class="second_level" label="Special Interest">
-<option value="visual"> 100 (or so) Brightest</option>
-<option value="cosmos-2251-debris"> COSMOS 2251 Debris</option>
-<option value="1999-025"> FENGYUN 1C Debris</option>
-<option value="iridium-33-debris"> IRIDIUM 33 Debris</option>
-<option value="tle-new"> Last 30 Days' Launches</option>
-<option value="stations"> Space Stations</option>
-</optgroup>
-<optgroup class="second_level" label="Weather &amp; Earth Resources">
-	<option value="dmc"> Disaster Monitoring</option>
-	<option value="resource"> Earth Resources</option>
-	<option value="goes"> GOES</option>
-	<option value="noaa"> NOAA</option>
-	<option value="sarsat"> Search &amp; Rescue (SARSAT)</option>
-	<option value="tdrss"> Tracking and Data Relay Satellite</option>
-	<option value="weather"> Weather</option>
-</optgroup>
-<optgroup class="second_level" label="Communications">
-	<option value="amateur"> Amateur Radio</option>
-	<option value="x-comm"> Experimental</option>
-	<option value="geo"> Geostationary</option>
-	<option value="globalstar"> Globalstar</option>
-	<option value="gorizont"> Gorizont</option>
-	<option value="intelsat"> Intelsat</option>
-	<option value="iridium"> Iridium</option>
-	<option value="molniya"> Molniya</option>
-	<option value="other-comm"> Other</option>
-	<option value="orbcomm"> Orbcomm</option>
-	<option value="raduga"> Raduga</option>
-</optgroup>
-<optgroup class="second_level" label="Navigation">
-	<option value="gps-ops"> GPS Operational</option>
-	<option value="galileo"> Galileo</option>
-	<option value="glo-ops"> Glonass Operational</option>
-	<option value="nnss"> Navy Navigation Satellite System</option>
-	<option value="musson"> Russian LEO Navigation</option>
-	<option value="sbas"> Satellite-Based Augmentation System</option>
-</optgroup>
-<optgroup class="second_level" label="Scientific">
-	<option value="education"> Education</option>
-	<option value="engineering"> Engineering</option>
-	<option value="geodetic"> Geodetic</option>
-	<option value="science"> Space &amp; Earth Science</option>
-</optgroup>
-<optgroup class="second_level" label="Miscellaneous">
-	<option value="cubesat"> CubeSats</option>
-	<option value="military"> Miscellaneous Military</option>
-	<option value="other"> Other</option>
-	<option value="radar"> Radar Calibration</option>
-</optgroup>
-</select>
-</form>
-</div>
-
--->
-
-
-  <script type="text/javascript">
-    opsmode = 'i';
-
-	$( "#satellites li" ).click(function() {
-		selectedSat = $(this).parent().children().index(this);
-		$( "#satellites li" ).removeClass('active');
-		$( this ).addClass('active');
-		newColor = "#"+((1<<24)*Math.random()|0).toString(16);
-  });
-
-  	// $( "#sat_1" ).click(function() {
-   //  	// selectedSat = 1;
-   //  	console.log($(this).index(this));
-   //  });
-
-	$( "#draw_button" ).click(function() {
-	  isDrawing = !isDrawing;
-		$( this ).toggleClass('active');
-	});
-
-	$( "#camera_button" ).click(function() {
-		followSatCamera = !followSatCamera;
-		$( this ).toggleClass('active');
-	});
-
-	$( "#export_button" ).click(function() {
-    isExporting = !isExporting;
-	});
-
-  </script>
  	<script type="text/javascript" src="js/sat_calculations.js"></script>
 	<script type="text/javascript" src="js/sketch.js"></script>
+
+	<script type="text/javascript">
+
+		$( "#start" ).click(function() {
+			$(".intro").css("opacity", "0");
+			$(".intro").css("visibility", "hidden");
+		});
+
+		$( "#site-title").click(function(){
+			$(".about").css("visibility", "visible");
+			$(".about").css("opacity", "1");
+		});
+		$( "#close" ).click(function() {
+			$(".about").css("opacity", "0");
+			$(".about").css("visibility", "hidden");
+		});
+
+
+		$("body").on("click","#satellites li",function(e) {
+    		selectedSat = $(this).parent().children().index(this);
+
+    		// console.log(particleGroup.emitters[selectedSat]);
+			
+			$( "#satellites li" ).removeClass('active');
+			$( this ).addClass('active');
+
+			followSatCamera = true;
+		});
+
+		// $( "#satellites" ).live( "click", function() {
+		// 	selectedSat = $(this).parent().children().index(this);
+		// 	console.log(selectedSat);
+		// 	$( "#satellites li" ).removeClass('active');
+		// 	$( this ).addClass('active');
+		// 	newColor = "#"+((1<<24)*Math.random()|0).toString(16);
+		// });
+
+		$( "#draw_button" ).click(function() {
+		  isDrawing = !isDrawing;
+			$( this ).toggleClass('active');
+		});
+
+		$( "#camera_button" ).click(function() {
+			if(selectedSat){
+				followSatCamera = !followSatCamera;
+				$( this ).toggleClass('active');
+			}
+		});
+
+		$( "#export_button" ).click(function() {
+			isDrawing = false;
+			var exporter = new THREE.STLExporter();
+			exportString( exporter.parse( orbitsGroup ));
+			isEporting = false;
+		});
+
+		// $( "#clear_button" ).click(function() {
+		// 	clearOrbits();
+		// });
+
+	</script>
+
 </body>
 </html>
