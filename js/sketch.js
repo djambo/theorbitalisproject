@@ -37,7 +37,7 @@ var isStarting = false;
 var isDrawing = false;
 var isSuspending = false;
 
-var speed = 0.5
+var speed = 1;
 
 var earthSphere, cloudSphere;
 
@@ -122,7 +122,7 @@ function init() {
 	scene.add(light);
 
 
- 	hemiLight = new THREE.HemisphereLight( 0xffffff, 0xffffff, 0.1 );
+ 	hemiLight = new THREE.HemisphereLight( 0xffffff, 0xffffff, 0.4 );
 	hemiLight.color.setHSL( 0.6, 1, 0.6 );
 	hemiLight.groundColor.setHSL( 0.6, 1, 0.6 );
 	hemiLight.position.set( 0, 500, 0 );
