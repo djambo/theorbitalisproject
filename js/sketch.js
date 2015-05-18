@@ -139,7 +139,9 @@ function init() {
 		    pZ = Math.random() * 6000 - 3000,
 		    particle = new THREE.Vector3(pX, pY, pZ);
 
-		particles.vertices.push(particle);
+		    if(particle.distanceTo(scene.position)>1000){
+				particles.vertices.push(particle);
+		    }
 	}
 
 	var stars = new THREE.PointCloud( particles, pMaterial);
