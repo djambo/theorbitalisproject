@@ -127,23 +127,6 @@ function init() {
 	hemiLight.groundColor.setHSL( 0.6, 1, 0.6 );
 	hemiLight.position.set( 0, 500, 0 );
 	scene.add( hemiLight );
- 
-	
-	var particleCount = 800,
-	    particles = new THREE.Geometry(),
-	    pMaterial = new THREE.PointCloudMaterial({ color: 0xFFFFFF, size: 4 });
-
-	for (var p = 0; p < particleCount; p++) {
-		var pX = Math.random() * 6000 - 3000,
-		    pY = Math.random() * 6000 - 3000,
-		    pZ = Math.random() * 6000 - 3000,
-		    particle = new THREE.Vector3(pX, pY, pZ);
-
-		particles.vertices.push(particle);
-	}
-
-	var stars = new THREE.PointCloud( particles, pMaterial);
-	scene.add(stars);
 
     var glowGeo = new THREE.SphereGeometry( earthRadius, 64,32);	
 
@@ -222,6 +205,25 @@ function init() {
 
 	scene.add(orbitsGroup);
 	createSatGroup();
+
+
+	var particleCount = 800,
+	    particles = new THREE.Geometry(),
+	    pMaterial = new THREE.PointCloudMaterial({ color: 0xFFFFFF, size: 10 });
+
+	for (var p = 0; p < particleCount; p++) {
+		var pX = Math.random() * 6000 - 3000,
+		    pY = Math.random() * 6000 - 3000,
+		    pZ = Math.random() * 6000 - 3000,
+		    particle = new THREE.Vector3(pX, pY, pZ);
+
+		    if(particle.distanceTo(earthSphere.position)>2000) {
+				particles.vertices.push(particle);
+			}
+	}
+
+	var stars = new THREE.PointCloud( particles, pMaterial);
+	scene.add(stars);
 }
 
 function createSatGroup(){
@@ -249,7 +251,7 @@ function createSatGroup(){
 	// scene.add(particleSystem);
 
 	particleGroup = new SPE.Group({
-		texture: THREE.ImageUtils.loadTexture('images/ball.png'),
+		texture: THREE.ImageUtils.loadTexture('images/spark.png'),
 		maxAge: 1
 	});
 }
