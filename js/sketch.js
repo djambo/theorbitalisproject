@@ -139,7 +139,7 @@ function init() {
 		    pZ = Math.random() * 6000 - 3000,
 		    particle = new THREE.Vector3(pX, pY, pZ);
 
-		    if(particle.distanceTo(scene.position)>1000){
+		    if(particle.distanceTo(scene.position)>3000){
 				particles.vertices.push(particle);
 		    }
 	}
@@ -251,7 +251,7 @@ function createSatGroup(){
 	// scene.add(particleSystem);
 
 	particleGroup = new SPE.Group({
-		texture: THREE.ImageUtils.loadTexture('images/ball.png'),
+		texture: THREE.ImageUtils.loadTexture('images/spark.png'),
 		maxAge: 1
 	});
 }
