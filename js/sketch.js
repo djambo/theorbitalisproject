@@ -73,12 +73,12 @@ animate();
 
 getSatrecsFromTLEFile('tle/SMD.txt');
 
-document.getElementById('select_satellite_group').onchange = function () {
-	clearSats();
-	isDrawing = false;
-	$( "#satellites li, #draw_button, #camera_button" ).removeClass('active');
-   	getSatrecsFromTLEFile('tle/' + this.value + '.txt'); // TODO: security risk?
-};
+// document.getElementById('select_satellite_group').onchange = function () {
+// 	clearSats();
+// 	isDrawing = false;
+// 	$( "#satellites li, #draw_button, #camera_button" ).removeClass('active');
+//    	getSatrecsFromTLEFile('tle/' + this.value + '.txt'); // TODO: security risk?
+// };
 
 function init() {
 	container = document.getElementById("container");

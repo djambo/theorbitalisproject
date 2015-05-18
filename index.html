@@ -199,18 +199,18 @@
 
 
 		$("body").on("click","#satellites li",function(e) {
-    		selectedSat = $(this).parent().children().index(this);			
+    		selectedSat = $(this).parent().children().index(this);		
 			$( "#satellites li" ).removeClass('active');
 			$( this ).addClass('active');
 		});
 
 		$( "#draw_button" ).click(function() {
-		  isDrawing = !isDrawing;
+		 	 isDrawing = !isDrawing;
 			$( this ).toggleClass('active');
 		});
 
 		$( "#camera_button" ).click(function() {
-			if(selectedSat){
+			if(selectedSat!= null){
 				followSatCamera = !followSatCamera;
 				$( this ).toggleClass('active');
 			}
