@@ -199,23 +199,10 @@
 
 
 		$("body").on("click","#satellites li",function(e) {
-    		selectedSat = $(this).parent().children().index(this);
-
-    		// console.log(particleGroup.emitters[selectedSat]);
-			
+    		selectedSat = $(this).parent().children().index(this);			
 			$( "#satellites li" ).removeClass('active');
 			$( this ).addClass('active');
-
-			followSatCamera = true;
 		});
-
-		// $( "#satellites" ).live( "click", function() {
-		// 	selectedSat = $(this).parent().children().index(this);
-		// 	console.log(selectedSat);
-		// 	$( "#satellites li" ).removeClass('active');
-		// 	$( this ).addClass('active');
-		// 	newColor = "#"+((1<<24)*Math.random()|0).toString(16);
-		// });
 
 		$( "#draw_button" ).click(function() {
 		  isDrawing = !isDrawing;
