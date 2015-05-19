@@ -133,12 +133,14 @@ header h1 span {
 }
 
 #satellites li {
+	font-size: 16px;
+
 	position: relative;
 	display: inline-block;
 	width: 100%;
 	/*height: 80px;*/
 	margin: 2% 0;
-	padding: 5%;
+	padding: 2% 5%;
 
 	background: rgba(45, 225, 175, 0.05);
 	color: rgba(230,234,239,0.5);
